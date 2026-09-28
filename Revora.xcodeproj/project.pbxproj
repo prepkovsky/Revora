@@ -11,11 +11,27 @@
 		F4860713306AAAF800A7E50F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = F4860714306AAAF800A7E50F /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		F4014029306AB81D009D081F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F48606F3306AAAF800A7E50F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F48606FA306AAAF800A7E50F;
+			remoteInfo = Revora;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		F4014025306AB81D009D081F /* RevoraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RevoraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F48606FB306AAAF800A7E50F /* Revora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Revora.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		F4014026306AB81D009D081F /* RevoraTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = RevoraTests;
+			sourceTree = "<group>";
+		};
 		F48606FD306AAAF800A7E50F /* Revora */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Revora;
@@ -24,6 +40,11 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		F4014022306AB81D009D081F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
 		F48606F8306AAAF800A7E50F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
@@ -38,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				F48606FD306AAAF800A7E50F /* Revora */,
+				F4014026306AB81D009D081F /* RevoraTests */,
 				F48606FC306AAAF800A7E50F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,6 +68,7 @@
 			isa = PBXGroup;
 			children = (
 				F48606FB306AAAF800A7E50F /* Revora.app */,
+				F4014025306AB81D009D081F /* RevoraTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -53,6 +76,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		F4014024306AB81D009D081F /* RevoraTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F401402D306AB81D009D081F /* Build configuration list for PBXNativeTarget "RevoraTests" */;
+			buildPhases = (
+				F4014021306AB81D009D081F /* Sources */,
+				F4014022306AB81D009D081F /* Frameworks */,
+				F4014023306AB81D009D081F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F401402A306AB81D009D081F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F4014026306AB81D009D081F /* RevoraTests */,
+			);
+			name = RevoraTests;
+			productName = RevoraTests;
+			productReference = F4014025306AB81D009D081F /* RevoraTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		F48606FA306AAAF800A7E50F /* Revora */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F4860706306AAAF800A7E50F /* Build configuration list for PBXNativeTarget "Revora" */;
@@ -85,6 +129,10 @@
 				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
+					F4014024306AB81D009D081F = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = F48606FA306AAAF800A7E50F;
+					};
 					F48606FA306AAAF800A7E50F = {
 						CreatedOnToolsVersion = 27.0;
 					};
@@ -108,11 +156,17 @@
 			projectRoot = "";
 			targets = (
 				F48606FA306AAAF800A7E50F /* Revora */,
+				F4014024306AB81D009D081F /* RevoraTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		F4014023306AB81D009D081F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
 		F48606F9306AAAF800A7E50F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
@@ -121,6 +175,11 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		F4014021306AB81D009D081F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 		F48606F7306AAAF800A7E50F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
@@ -128,7 +187,59 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		F401402A306AB81D009D081F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F48606FA306AAAF800A7E50F /* Revora */;
+			targetProxy = F4014029306AB81D009D081F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		F401402B306AB81D009D081F /* Debug configuration for PBXNativeTarget "RevoraTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6FW5UHA4XB;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.patrikrepkovsky.revora.RevoraTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Revora.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Revora";
+			};
+			name = Debug;
+		};
+		F401402C306AB81D009D081F /* Release configuration for PBXNativeTarget "RevoraTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6FW5UHA4XB;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.patrikrepkovsky.revora.RevoraTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Revora.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Revora";
+			};
+			name = Release;
+		};
 		F4860704306AAAF800A7E50F /* Debug configuration for PBXProject "Revora" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -317,6 +428,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		F401402D306AB81D009D081F /* Build configuration list for PBXNativeTarget "RevoraTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F401402B306AB81D009D081F /* Debug configuration for PBXNativeTarget "RevoraTests" */,
+				F401402C306AB81D009D081F /* Release configuration for PBXNativeTarget "RevoraTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
 		F48606F6306AAAF800A7E50F /* Build configuration list for PBXProject "Revora" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

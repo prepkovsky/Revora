@@ -16,6 +16,13 @@ xcodebuild -project Revora.xcodeproj -scheme Revora -sdk iphonesimulator \
   -configuration Debug build CODE_SIGNING_ALLOWED=NO
 ```
 
+Run unit tests (use any installed iPhone simulator):
+
+```sh
+xcodebuild -project Revora.xcodeproj -scheme Revora \
+  -destination 'platform=iOS Simulator,name=iPhone 17' test
+```
+
 If Xcode is open and resolving packages at the same time, add `-clonedSourcePackagesDirPath <tmp dir>` to avoid cache conflicts.
 
 The app needs `Revora/GoogleService-Info.plist` to build and run. It is gitignored on purpose. Never commit it, and never remove it from `.gitignore`.
@@ -30,9 +37,10 @@ Revora/
 ├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Settings
 ├── Components/     Shared reusable views
 └── Assets.xcassets
+RevoraTests/        Unit tests (Swift Testing)
 ```
 
-- The `Revora/` folder is an Xcode **synchronized folder**: new files and folders inside it are picked up automatically. Don't edit `project.pbxproj` to add source files.
+- `Revora/` and `RevoraTests/` are Xcode **synchronized folders**: new files and folders inside them are picked up automatically. Don't edit `project.pbxproj` to add source files.
 - Only edit `project.pbxproj` for build settings or package changes, and keep edits minimal.
 
 ## Architecture
@@ -57,6 +65,7 @@ Security rules: users can only read and write under their own `users/{uid}`.
 - Match the existing code style. Keep comments sparse; explain *why*, not *what*.
 - Use Swift concurrency (`async/await`) rather than completion handlers where Firebase offers both.
 - Show user-facing errors as friendly messages, not raw Firebase errors.
+- Unit test logic that doesn't need the network (validation, error mapping, model coding, sorting/filtering) with Swift Testing. Tests never call real Firebase.
 - Don't use `@unchecked Sendable` or `nonisolated(unsafe)` to silence concurrency errors without explaining why it's safe.
 
 ## Working in this repo
