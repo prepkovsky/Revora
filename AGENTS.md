@@ -48,7 +48,7 @@ RevoraTests/        Unit tests (Swift Testing)
 - `@Observable` models and services, injected through the SwiftUI environment.
 - Views don't talk to Firebase directly. They go through `AuthService` and `RecipeRepository`.
 - One `NavigationStack` per tab.
-- Tab bar: native `TabView`. Home, Recipes and `+` are regular tabs. Settings is the separated tab using the search role. The `+` tab opens the recipe editor as a sheet and is never shown as selected.
+- Tab bar: native `TabView` with four regular tabs in one bar: Home, Recipes, `+` and Settings. The `+` tab opens the recipe editor as a sheet and is never shown as selected.
 
 ### Firestore data
 
