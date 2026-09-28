@@ -30,3 +30,9 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Local reference docs (not part of the app)
+.references/
+
+# Firebase config (keep a backup outside the repo)
+GoogleService-Info.plist
