@@ -22,13 +22,6 @@ struct MainTabView: View {
                 }
             }
 
-            Tab("New Recipe", systemImage: "plus") {
-                NavigationStack {
-                    ContentUnavailableView("New Recipe", systemImage: "plus")
-                        .navigationTitle("New Recipe")
-                }
-            }
-
             Tab("Settings", systemImage: "gearshape") {
                 NavigationStack {
                     SettingsView()
