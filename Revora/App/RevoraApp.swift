@@ -3,6 +3,8 @@ import SwiftUI
 
 @main
 struct RevoraApp: App {
+    @State private var authService = AuthService()
+
     init() {
         FirebaseApp.configure()
     }
@@ -10,6 +12,7 @@ struct RevoraApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(authService)
         }
     }
 }

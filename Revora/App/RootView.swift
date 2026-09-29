@@ -1,29 +1,22 @@
 import SwiftUI
 
 struct RootView: View {
-    // Temporary stand-in until AuthService provides the real auth state.
-    @State private var isSignedIn = false
+    @Environment(AuthService.self) private var authService
 
     var body: some View {
         Group {
-            if isSignedIn {
-                MainTabView()
-            } else {
+            switch authService.state {
+            case .loading:
+                DelayedProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            case .signedOut:
                 AuthFlow()
+            case .signedIn:
+                MainTabView()
             }
         }
-        #if DEBUG
-        .overlay(alignment: .bottom) {
-            Button(isSignedIn ? "Debug: Sign Out" : "Debug: Sign In") {
-                isSignedIn.toggle()
-            }
-            .buttonStyle(.borderedProminent)
-            .padding()
+        .task {
+            await authService.observeAuthState()
         }
-        #endif
     }
-}
-
-#Preview {
-    RootView()
 }
