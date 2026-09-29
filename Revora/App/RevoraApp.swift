@@ -1,10 +1,3 @@
-//
-//  RevoraApp.swift
-//  Revora
-//
-//  Created by Patrik Repkovsky on 28/09/2026.
-//
-
 import FirebaseCore
 import SwiftUI
 

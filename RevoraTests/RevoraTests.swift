@@ -1,10 +1,3 @@
-//
-//  RevoraTests.swift
-//  RevoraTests
-//
-//  Created by Patrik Repkovsky on 28/09/2026.
-//
-
 import Testing
 
 struct RevoraTests {
