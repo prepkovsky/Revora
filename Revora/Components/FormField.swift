@@ -8,7 +8,7 @@ struct FormField<Field: Hashable, Input: View>: View {
     var hint: String?
     var error: String?
     /// A way to recover from the error, shown under it.
-    var errorAction: FormFieldAction?
+    var errorAction: RecoveryAction?
     let focus: FocusState<Field?>.Binding
     let field: Field
     @ViewBuilder let input: Input
@@ -34,15 +34,7 @@ struct FormField<Field: Hashable, Input: View>: View {
                 .onTapGesture { focus.wrappedValue = field }
 
             if let error {
-                Label(error, systemImage: "exclamationmark.circle")
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-
-                if let errorAction {
-                    Button(errorAction.title, action: errorAction.perform)
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                }
+                ErrorMessage(message: error, action: errorAction)
             } else if let hint {
                 Text(hint)
                     .font(.footnote)
@@ -52,11 +44,6 @@ struct FormField<Field: Hashable, Input: View>: View {
     }
 }
 
-struct FormFieldAction {
-    let title: String
-    let perform: () -> Void
-}
-
 #Preview {
     @Previewable @FocusState var focusedField: Int?
 
@@ -64,7 +51,7 @@ struct FormFieldAction {
         FormField(
             label: "Email",
             error: "An account with this email already exists.",
-            errorAction: FormFieldAction(title: "Log In Instead") {},
+            errorAction: RecoveryAction(title: "Log In Instead") {},
             focus: $focusedField,
             field: 0
         ) {

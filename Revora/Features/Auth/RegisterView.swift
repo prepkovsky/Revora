@@ -64,9 +64,7 @@ struct RegisterView: View {
 
                 VStack(alignment: .leading, spacing: 12) {
                     if let submitError, field(for: submitError) == nil {
-                        Label(submitError.message, systemImage: "exclamationmark.circle")
-                            .font(.footnote)
-                            .foregroundStyle(.red)
+                        ErrorMessage(message: submitError.message)
                     }
 
                     Button(action: submit) {
@@ -83,6 +81,7 @@ struct RegisterView: View {
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
+        .onTapGesture { focusedField = nil }
         .navigationTitle("Create Account")
         .onChange(of: focusedField) { oldField, _ in
             // Only judge a field once people leave it, not while they're still typing.
@@ -111,8 +110,8 @@ struct RegisterView: View {
         }
     }
 
-    private var logInInstead: FormFieldAction {
-        FormFieldAction(title: "Log In Instead") {
+    private var logInInstead: RecoveryAction {
+        RecoveryAction(title: "Log In Instead") {
             onLogIn(form.trimmedEmail)
             dismiss()
         }

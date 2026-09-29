@@ -9,6 +9,7 @@ struct LoginView: View {
     @State private var checkedFields: Set<Field> = []
     @State private var isSubmitting = false
     @State private var submitError: AuthError?
+    @State private var isResettingPassword = false
     @FocusState private var focusedField: Field?
 
     var body: some View {
@@ -27,18 +28,27 @@ struct LoginView: View {
                         .onSubmit { focusedField = .password }
                 }
 
-                FormField(label: "Password", error: error(for: .password), focus: $focusedField, field: .password) {
-                    PasswordField(title: "Password", text: $form.password)
-                        .textContentType(.password)
-                        .submitLabel(.go)
-                        .onSubmit(submit)
+                VStack(alignment: .trailing, spacing: 0) {
+                    FormField(label: "Password", error: error(for: .password), focus: $focusedField, field: .password) {
+                        PasswordField(title: "Password", text: $form.password)
+                            .textContentType(.password)
+                            .submitLabel(.go)
+                            .onSubmit(submit)
+                    }
+
+                    Button("Forgot password?") {
+                        isResettingPassword = true
+                    }
+                    .font(.subheadline)
+                    .frame(minHeight: 44)
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
                     if let submitError, field(for: submitError) == nil {
-                        Label(submitError.message, systemImage: "exclamationmark.circle")
-                            .font(.footnote)
-                            .foregroundStyle(.red)
+                        ErrorMessage(
+                            message: submitError.message,
+                            action: submitError == .wrongCredentials ? resetPassword : nil
+                        )
                     }
 
                     Button(action: submit) {
@@ -70,7 +80,11 @@ struct LoginView: View {
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
+        .onTapGesture { focusedField = nil }
         .navigationTitle("Log In")
+        .navigationDestination(isPresented: $isResettingPassword) {
+            ResetPasswordView(email: form.trimmedEmail)
+        }
         .onChange(of: focusedField) { oldField, _ in
             // Only judge a field once people leave it, not while they're still typing.
             if let oldField, !isEmpty(oldField) {
@@ -94,6 +108,12 @@ struct LoginView: View {
         switch error {
         case .invalidEmail: .email
         case .emailAlreadyInUse, .weakPassword, .wrongCredentials, .network, .tooManyRequests, .unknown: nil
+        }
+    }
+
+    private var resetPassword: RecoveryAction {
+        RecoveryAction(title: "Reset Password") {
+            isResettingPassword = true
         }
     }
 

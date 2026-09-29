@@ -2,7 +2,7 @@
 
 A simple recipe app for iPhone and iPad. Sign up with email and password, save your own recipes (title, ingredients and steps), and mark your favorites.
 
-> **Status:** early development. The app shell, navigation, sign-up and log in are in place; password reset and recipe storage are next.
+> **Status:** early development. The app shell, navigation, sign-up, log in and password reset are in place; recipe storage is next.
 
 ## Requirements
 

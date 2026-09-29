@@ -40,7 +40,7 @@ enum AuthError: Error, Equatable {
             "Choose a password with at least \(AuthService.minimumPasswordLength) characters."
         case .wrongCredentials:
             // Doesn't say which one is wrong, so it doesn't reveal whether an account exists.
-            "That email and password don't match. Try again."
+            "That email and password don't match. Try again or reset your password."
         case .network:
             "You're offline. Check your connection and try again."
         case .tooManyRequests:

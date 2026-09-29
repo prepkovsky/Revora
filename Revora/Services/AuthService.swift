@@ -49,6 +49,21 @@ final class AuthService {
         }
     }
 
+    /// Firebase only emails addresses that have an account, but this succeeds either way
+    /// so the screen can't be used to find out which emails have accounts.
+    func sendPasswordReset(email: String) async throws(AuthError) {
+        do {
+            try await Auth.auth().sendPasswordReset(withEmail: email)
+            Self.logger.info("Password reset requested")
+        } catch let error as NSError
+            where error.domain == AuthErrors.domain && error.code == AuthErrorCode.userNotFound.rawValue {
+            Self.logger.info("Password reset skipped: no account for that email")
+        } catch {
+            Self.logger.error("Password reset failed: \(error)")
+            throw AuthError(error)
+        }
+    }
+
     func logOut() throws(AuthError) {
         do {
             try Auth.auth().signOut()
