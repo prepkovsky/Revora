@@ -2,10 +2,13 @@ import SwiftUI
 
 struct AuthFlow: View {
     var body: some View {
-        ContentUnavailableView("Log In", systemImage: "person.crop.circle")
+        NavigationStack {
+            RegisterView()
+        }
     }
 }
 
 #Preview {
     AuthFlow()
+        .environment(AuthService())
 }
