@@ -48,6 +48,7 @@ struct ResetPasswordView: View {
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
+        .background(.appBackground)
         .onTapGesture { focusedField = nil }
         .navigationTitle("Reset Password")
         .sensoryFeedback(.success, trigger: sentToEmail) { _, newValue in newValue != nil }
@@ -86,9 +87,8 @@ struct ResetPasswordView: View {
                     ProgressButtonLabel(title: "Send Reset Link", isInProgress: isSubmitting)
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(emailIssue != nil || isSubmitting)
+                .buttonStyle(.primary)
+                .disabled(emailIssue != nil)
             }
         }
     }
@@ -97,7 +97,7 @@ struct ResetPasswordView: View {
         VStack(spacing: 16) {
             Image(systemName: "envelope.badge")
                 .font(.system(size: 48))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryAccent)
                 .accessibilityHidden(true)
 
             Text("Check Your Email")
@@ -113,8 +113,7 @@ struct ResetPasswordView: View {
                 Text("Back to Log In")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(.primary)
             .padding(.top, 8)
         }
         .frame(maxWidth: .infinity)

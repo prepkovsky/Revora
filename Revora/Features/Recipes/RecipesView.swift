@@ -5,6 +5,7 @@ struct RecipesView: View {
 
     var body: some View {
         ContentUnavailableView("Recipes", systemImage: "book")
+            .background(.appBackground)
             .navigationTitle("Recipes")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

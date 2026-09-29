@@ -6,6 +6,7 @@ struct RecipeEditorView: View {
     var body: some View {
         NavigationStack {
             ContentUnavailableView("New Recipe", systemImage: "square.and.pencil")
+                .background(.appBackground)
                 .navigationTitle("New Recipe")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {

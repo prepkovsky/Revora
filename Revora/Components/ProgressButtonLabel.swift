@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A button label that turns into a spinner while work is in progress.
+/// A primary button label that turns into a spinner while work is in progress.
 /// The spinner waits a moment before appearing and then stays for a minimum
 /// time, so quick requests don't flash it. The title keeps the label's size
 /// so the button doesn't jump.
@@ -19,6 +19,7 @@ struct ProgressButtonLabel: View {
 
             if spinnerShownAt != nil {
                 ProgressView()
+                    .tint(.accentForeground)
             }
         }
         .accessibilityElement(children: .ignore)
@@ -44,7 +45,6 @@ struct ProgressButtonLabel: View {
         ProgressButtonLabel(title: "Create Account", isInProgress: true)
             .frame(maxWidth: .infinity)
     }
-    .buttonStyle(.borderedProminent)
-    .controlSize(.large)
+    .buttonStyle(.primary)
     .padding()
 }

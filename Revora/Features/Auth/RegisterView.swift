@@ -71,9 +71,8 @@ struct RegisterView: View {
                         ProgressButtonLabel(title: "Create Account", isInProgress: isSubmitting)
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(!form.isValid || isSubmitting)
+                    .buttonStyle(.primary)
+                    .disabled(!form.isValid)
                 }
             }
             .padding()
@@ -81,6 +80,7 @@ struct RegisterView: View {
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
+        .background(.appBackground)
         .onTapGesture { focusedField = nil }
         .navigationTitle("Create Account")
         .onChange(of: focusedField) { oldField, _ in

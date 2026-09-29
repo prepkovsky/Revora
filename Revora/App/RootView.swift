@@ -7,8 +7,16 @@ struct RootView: View {
         Group {
             switch authService.state {
             case .loading:
-                DelayedProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                // Same logo in the same place as the launch screen, so launch flows straight into loading.
+                ZStack {
+                    Image(.launchLogo)
+                        .accessibilityHidden(true)
+                    DelayedProgressView()
+                        .offset(y: 100)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .ignoresSafeArea()
+                .background(.appBackground)
             case .signedOut:
                 AuthFlow()
             case .signedIn:

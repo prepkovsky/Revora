@@ -11,6 +11,7 @@ struct SettingsView: View {
         } actions: {
             Button("Log Out", role: .destructive, action: logOut)
         }
+        .background(.appBackground)
         .navigationTitle("Settings")
         .alert(
             "Couldn't Log Out",

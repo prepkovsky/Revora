@@ -39,7 +39,7 @@ struct LoginView: View {
                     Button("Forgot password?") {
                         isResettingPassword = true
                     }
-                    .font(.subheadline)
+                    .font(.subheadline.weight(.semibold))
                     .frame(minHeight: 44)
                 }
 
@@ -55,9 +55,8 @@ struct LoginView: View {
                         ProgressButtonLabel(title: "Log In", isInProgress: isSubmitting)
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(!form.isValid || isSubmitting)
+                    .buttonStyle(.primary)
+                    .disabled(!form.isValid)
                 }
 
                 NavigationLink {
@@ -80,6 +79,7 @@ struct LoginView: View {
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
+        .background(.appBackground)
         .onTapGesture { focusedField = nil }
         .navigationTitle("Log In")
         .navigationDestination(isPresented: $isResettingPassword) {
