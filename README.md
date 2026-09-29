@@ -7,7 +7,7 @@ A simple recipe app for iPhone and iPad. Sign up with email and password, save y
 ## Requirements
 
 - Xcode 27
-- iOS / iPadOS 27 or later
+- iOS / iPadOS 18 or later
 - A Firebase project with **Authentication** (Email/Password) and **Cloud Firestore** enabled
 
 ## Setup
@@ -28,7 +28,7 @@ xcodebuild -project Revora.xcodeproj -scheme Revora -sdk iphonesimulator \
   -configuration Debug build CODE_SIGNING_ALLOWED=NO
 ```
 
-Run the unit tests (any iOS 27 iPhone simulator works):
+Run the unit tests (any iPhone simulator on iOS 18 or later works):
 
 ```sh
 xcodebuild -project Revora.xcodeproj -scheme Revora \

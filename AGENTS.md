@@ -4,7 +4,7 @@ A simple iOS/iPadOS recipe app. Users sign up or log in with email and password,
 
 ## Stack
 
-- SwiftUI, iOS/iPadOS 27+, Xcode 27
+- SwiftUI, iOS/iPadOS 18+ (deployment target), built with Xcode 27. Guard newer APIs with `#available`.
 - **Swift 6** language mode with **default MainActor isolation** and approachable concurrency (set in build settings)
 - Firebase via Swift Package Manager: **FirebaseAuth** and **FirebaseFirestore** only. Don't add other Firebase products without asking.
 - No other third-party dependencies.
