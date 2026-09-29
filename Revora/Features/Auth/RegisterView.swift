@@ -3,7 +3,11 @@ import SwiftUI
 struct RegisterView: View {
     typealias Field = RegisterForm.Field
 
+    /// Goes back to Login with the email filled in.
+    let onLogIn: (_ email: String) -> Void
+
     @Environment(AuthService.self) private var authService
+    @Environment(\.dismiss) private var dismiss
 
     @State private var form = RegisterForm()
     @State private var checkedFields: Set<Field> = []
@@ -17,7 +21,13 @@ struct RegisterView: View {
                 Text("Create an account to keep your recipes synced and safe.")
                     .foregroundStyle(.secondary)
 
-                FormField(label: "Email", error: error(for: .email), focus: $focusedField, field: .email) {
+                FormField(
+                    label: "Email",
+                    error: error(for: .email),
+                    errorAction: submitError == .emailAlreadyInUse ? logInInstead : nil,
+                    focus: $focusedField,
+                    field: .email
+                ) {
                     TextField("Email", text: $form.email, prompt: Text("name@example.com"))
                         .keyboardType(.emailAddress)
                         .textContentType(.emailAddress)
@@ -97,7 +107,14 @@ struct RegisterView: View {
         switch error {
         case .emailAlreadyInUse, .invalidEmail: .email
         case .weakPassword: .password
-        case .network, .tooManyRequests, .unknown: nil
+        case .wrongCredentials, .network, .tooManyRequests, .unknown: nil
+        }
+    }
+
+    private var logInInstead: FormFieldAction {
+        FormFieldAction(title: "Log In Instead") {
+            onLogIn(form.trimmedEmail)
+            dismiss()
         }
     }
 
@@ -131,7 +148,7 @@ struct RegisterView: View {
 
 #Preview {
     NavigationStack {
-        RegisterView()
+        RegisterView { _ in }
     }
     .environment(AuthService())
 }

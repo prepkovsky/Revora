@@ -6,6 +6,7 @@ enum AuthError: Error, Equatable {
     case emailAlreadyInUse
     case invalidEmail
     case weakPassword
+    case wrongCredentials
     case network
     case tooManyRequests
     case unknown
@@ -21,6 +22,8 @@ enum AuthError: Error, Equatable {
         case .emailAlreadyInUse: self = .emailAlreadyInUse
         case .invalidEmail: self = .invalidEmail
         case .weakPassword: self = .weakPassword
+        // With email enumeration protection on, Firebase reports all of these as invalidCredential.
+        case .invalidCredential, .wrongPassword, .userNotFound: self = .wrongCredentials
         case .networkError: self = .network
         case .tooManyRequests: self = .tooManyRequests
         default: self = .unknown
@@ -35,6 +38,9 @@ enum AuthError: Error, Equatable {
             "Enter an email like name@example.com."
         case .weakPassword:
             "Choose a password with at least \(AuthService.minimumPasswordLength) characters."
+        case .wrongCredentials:
+            // Doesn't say which one is wrong, so it doesn't reveal whether an account exists.
+            "That email and password don't match. Try again."
         case .network:
             "You're offline. Check your connection and try again."
         case .tooManyRequests:

@@ -39,4 +39,22 @@ final class AuthService {
             throw AuthError(error)
         }
     }
+
+    func logIn(email: String, password: String) async throws(AuthError) {
+        do {
+            _ = try await Auth.auth().signIn(withEmail: email, password: password)
+        } catch {
+            Self.logger.error("Log in failed: \(error)")
+            throw AuthError(error)
+        }
+    }
+
+    func logOut() throws(AuthError) {
+        do {
+            try Auth.auth().signOut()
+        } catch {
+            Self.logger.error("Log out failed: \(error)")
+            throw AuthError(error)
+        }
+    }
 }

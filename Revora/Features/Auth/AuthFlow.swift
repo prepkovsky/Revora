@@ -3,7 +3,7 @@ import SwiftUI
 struct AuthFlow: View {
     var body: some View {
         NavigationStack {
-            RegisterView()
+            LoginView()
         }
     }
 }

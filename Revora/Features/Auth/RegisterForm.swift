@@ -9,9 +9,8 @@ struct RegisterForm: Equatable {
     var password = ""
     var confirmPassword = ""
 
-    /// AutoFill and pasting can add stray spaces around an email.
     var trimmedEmail: String {
-        email.trimmingCharacters(in: .whitespacesAndNewlines)
+        EmailAddress.trimmed(email)
     }
 
     static var passwordRequirement: String {
@@ -22,9 +21,7 @@ struct RegisterForm: Equatable {
     func issue(for field: Field) -> String? {
         switch field {
         case .email:
-            trimmedEmail.wholeMatch(of: /[^\s@]+@[^\s@]+\.[^\s@]{2,}/) == nil
-                ? "Enter an email like name@example.com."
-                : nil
+            EmailAddress.isValid(trimmedEmail) ? nil : EmailAddress.requirement
         case .password:
             password.count < AuthService.minimumPasswordLength ? Self.passwordRequirement : nil
         case .confirmPassword:

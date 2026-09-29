@@ -7,6 +7,8 @@ struct FormField<Field: Hashable, Input: View>: View {
     let label: String
     var hint: String?
     var error: String?
+    /// A way to recover from the error, shown under it.
+    var errorAction: FormFieldAction?
     let focus: FocusState<Field?>.Binding
     let field: Field
     @ViewBuilder let input: Input
@@ -35,6 +37,12 @@ struct FormField<Field: Hashable, Input: View>: View {
                 Label(error, systemImage: "exclamationmark.circle")
                     .font(.footnote)
                     .foregroundStyle(.red)
+
+                if let errorAction {
+                    Button(errorAction.title, action: errorAction.perform)
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                }
             } else if let hint {
                 Text(hint)
                     .font(.footnote)
@@ -44,13 +52,19 @@ struct FormField<Field: Hashable, Input: View>: View {
     }
 }
 
+struct FormFieldAction {
+    let title: String
+    let perform: () -> Void
+}
+
 #Preview {
     @Previewable @FocusState var focusedField: Int?
 
     VStack(spacing: 24) {
         FormField(
             label: "Email",
-            error: "Enter an email like name@example.com.",
+            error: "An account with this email already exists.",
+            errorAction: FormFieldAction(title: "Log In Instead") {},
             focus: $focusedField,
             field: 0
         ) {
