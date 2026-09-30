@@ -14,6 +14,7 @@ enum EmailAddress {
     }
 
     /// A loose shape check to catch typos early. Firebase has the final say.
+    /// Keep it loose: Login uses it too, and a stricter rule could lock out existing accounts.
     private static func isValid(_ email: String) -> Bool {
         email.wholeMatch(of: /[^\s@]+@[^\s@]+\.[^\s@]{2,}/) != nil
     }
