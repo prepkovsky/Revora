@@ -1,5 +1,3 @@
-import Foundation
-
 struct LoginForm: Equatable {
     enum Field: CaseIterable {
         case email, password
@@ -17,7 +15,7 @@ struct LoginForm: Equatable {
     func issue(for field: Field) -> String? {
         switch field {
         case .email:
-            EmailAddress.isValid(trimmedEmail) ? nil : EmailAddress.requirement
+            EmailAddress.issue(for: trimmedEmail)
         case .password:
             password.isEmpty ? "Enter your password." : nil
         }

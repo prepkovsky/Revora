@@ -24,12 +24,12 @@ struct ResetPasswordView: View {
     }
 
     private var emailIssue: String? {
-        EmailAddress.isValid(trimmedEmail) ? nil : EmailAddress.requirement
+        EmailAddress.issue(for: trimmedEmail)
     }
 
     private var emailError: String? {
         if submitError == .invalidEmail {
-            return submitError?.message
+            return AuthError.invalidEmail.message
         }
         return isEmailChecked ? emailIssue : nil
     }

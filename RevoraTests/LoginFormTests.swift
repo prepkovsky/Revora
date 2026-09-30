@@ -8,6 +8,13 @@ struct LoginFormTests {
         #expect(form.trimmedEmail == "name@example.com")
     }
 
+    @Test(arguments: ["", "  \n"])
+    func asksForMissingEmail(_ email: String) {
+        let form = LoginForm(email: email, password: "x")
+        #expect(form.issue(for: .email) == EmailAddress.missing)
+        #expect(!form.isValid)
+    }
+
     @Test func requiresValidEmail() {
         let form = LoginForm(email: "name@", password: "x")
         #expect(form.issue(for: .email) == EmailAddress.requirement)

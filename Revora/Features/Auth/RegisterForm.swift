@@ -1,5 +1,3 @@
-import Foundation
-
 struct RegisterForm: Equatable {
     enum Field: CaseIterable {
         case email, password, confirmPassword
@@ -21,7 +19,7 @@ struct RegisterForm: Equatable {
     func issue(for field: Field) -> String? {
         switch field {
         case .email:
-            EmailAddress.isValid(trimmedEmail) ? nil : EmailAddress.requirement
+            EmailAddress.issue(for: trimmedEmail)
         case .password:
             password.count < AuthService.minimumPasswordLength ? Self.passwordRequirement : nil
         case .confirmPassword:
