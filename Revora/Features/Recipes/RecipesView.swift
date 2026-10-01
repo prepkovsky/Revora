@@ -56,4 +56,5 @@ struct RecipesView: View {
         RecipesView()
     }
     .environment(RecipeRepository())
+    .environment(RecipePhotoStore())
 }

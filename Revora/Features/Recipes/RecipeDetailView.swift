@@ -89,6 +89,10 @@ struct RecipeDetailView: View {
                     .foregroundStyle(.secondary)
                     .listRowBackground(Color.clear)
             }
+
+            #if DEBUG
+            PhotoDebugSection(recipe: recipe)
+            #endif
         }
         .scrollContentBackground(.hidden)
         // Like Contacts: the big title is part of the page, and a small one
@@ -117,4 +121,5 @@ struct RecipeDetailView: View {
         RecipeDetailView(recipeID: "missing")
     }
     .environment(RecipeRepository())
+    .environment(RecipePhotoStore())
 }

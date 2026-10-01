@@ -28,4 +28,5 @@ struct MainTabView: View {
     MainTabView()
         .environment(AuthService())
         .environment(RecipeRepository())
+        .environment(RecipePhotoStore())
 }
