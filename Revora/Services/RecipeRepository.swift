@@ -66,6 +66,15 @@ final class RecipeRepository {
         try write(recipe, to: recipesCollection().document(recipe.id))
     }
 
+    /// Only touches `lastOpenedAt`, so opening a recipe doesn't count as editing it.
+    /// `updateData` fails for a deleted recipe instead of bringing it back.
+    func markOpened(_ recipe: Recipe) throws(RecipeError) {
+        try recipesCollection().document(recipe.id).updateData(
+            [Recipe.CodingKeys.lastOpenedAt.stringValue: Timestamp(date: .now)],
+            completion: Self.logFailure("Marking as opened")
+        )
+    }
+
     func delete(_ recipe: Recipe) throws(RecipeError) {
         try recipesCollection().document(recipe.id).delete(completion: Self.logFailure("Delete"))
     }

@@ -20,7 +20,8 @@ extension Recipe: Codable {
     /// IDs set before saving, and recipe IDs are generated on the device.
     static let documentIDKey = CodingUserInfoKey(rawValue: "Recipe.documentID")!
 
-    private enum CodingKeys: String, CodingKey {
+    /// Also the Firestore field names, for updating a single field.
+    enum CodingKeys: String, CodingKey {
         case title, ingredients, steps, isFavorite, createdAt, updatedAt, lastOpenedAt
     }
 

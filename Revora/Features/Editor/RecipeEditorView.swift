@@ -13,6 +13,7 @@ struct RecipeEditorView: View {
 
     @Environment(RecipeRepository.self) private var recipeRepository
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private let originalDraft = RecipeDraft()
     @State private var draft = RecipeDraft()
@@ -20,6 +21,11 @@ struct RecipeEditorView: View {
     @State private var isConfirmingDiscard = false
     @FocusState private var focusedField: Field?
     @ScaledMetric private var quantityWidth = 90.0
+
+    /// At accessibility text sizes an amount column leaves the name too little room.
+    private var stacksIngredientFields: Bool {
+        dynamicTypeSize.isAccessibilitySize
+    }
 
     private var hasChanges: Bool {
         draft.hasChanges(from: originalDraft)
@@ -38,10 +44,11 @@ struct RecipeEditorView: View {
 
                 Section("Ingredients") {
                     ForEach($draft.ingredients) { $row in
-                        HStack {
+                        let layout = stacksIngredientFields ? AnyLayout(VStackLayout()) : AnyLayout(HStackLayout())
+                        layout {
                             TextField("Amount", text: $row.quantity, prompt: Text("Amount"))
                                 .autocorrectionDisabled()
-                                .frame(width: quantityWidth)
+                                .frame(width: stacksIngredientFields ? nil : quantityWidth)
                                 .focused($focusedField, equals: .quantity(row.id))
                                 .submitLabel(.next)
                                 .onSubmit { focusedField = .name(row.id) }

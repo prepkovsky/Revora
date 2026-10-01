@@ -19,6 +19,9 @@ struct RecipesView: View {
             .sheet(isPresented: $isShowingEditor) {
                 RecipeEditorView()
             }
+            .navigationDestination(for: Recipe.self) { recipe in
+                RecipeDetailView(recipeID: recipe.id)
+            }
     }
 
     @ViewBuilder private var content: some View {
@@ -38,8 +41,10 @@ struct RecipesView: View {
             }
         } else {
             List(recipeRepository.recipes.sortedByTitle()) { recipe in
-                RecipeRowView(recipe: recipe)
-                    .listRowBackground(Color.surface)
+                NavigationLink(value: recipe) {
+                    RecipeRowView(recipe: recipe)
+                }
+                .listRowBackground(Color.surface)
             }
             .scrollContentBackground(.hidden)
         }
