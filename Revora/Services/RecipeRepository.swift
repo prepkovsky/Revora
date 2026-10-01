@@ -9,6 +9,9 @@ final class RecipeRepository {
     /// The signed-in user's recipes, most recently updated first.
     private(set) var recipes: [Recipe] = []
 
+    /// Whether the first snapshot has arrived, so an empty list really means no recipes.
+    private(set) var hasLoaded = false
+
     /// Whose recipes are loaded. Writes go under this user too.
     private var ownerID: String?
 
@@ -21,6 +24,7 @@ final class RecipeRepository {
             if self.ownerID == ownerID {
                 self.ownerID = nil
                 recipes = []
+                hasLoaded = false
             }
         }
 
@@ -28,6 +32,7 @@ final class RecipeRepository {
         do {
             for try await snapshot in query.snapshots {
                 recipes = snapshot.documents.compactMap(Self.decode)
+                hasLoaded = true
             }
         } catch where !Task.isCancelled {
             // Signing out can fail the listener just before the task is cancelled.
