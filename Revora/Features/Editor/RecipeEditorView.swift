@@ -16,8 +16,10 @@ struct RecipeEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private let originalDraft = RecipeDraft()
-    @State private var draft = RecipeDraft()
+    /// The recipe being edited, or `nil` for a new one.
+    private let recipe: Recipe?
+    private let originalDraft: RecipeDraft
+    @State private var draft: RecipeDraft
     @State private var isPreparingPhoto = false
     @State private var saveErrorMessage: String?
     @State private var isConfirmingDiscard = false
@@ -31,6 +33,13 @@ struct RecipeEditorView: View {
 
     private var hasChanges: Bool {
         draft.hasChanges(from: originalDraft)
+    }
+
+    init(recipe: Recipe? = nil) {
+        self.recipe = recipe
+        let draft = recipe.map(RecipeDraft.init(recipe:)) ?? RecipeDraft()
+        originalDraft = draft
+        _draft = State(initialValue: draft)
     }
 
     var body: some View {
@@ -104,12 +113,16 @@ struct RecipeEditorView: View {
             .scrollContentBackground(.hidden)
             .scrollDismissesKeyboard(.interactively)
             .background(.appBackground)
-            .navigationTitle("New Recipe")
+            .navigationTitle(recipe == nil ? "New Recipe" : "Edit Recipe")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: cancel)
-                        .confirmationDialog("Discard this recipe?", isPresented: $isConfirmingDiscard, titleVisibility: .visible) {
+                        .confirmationDialog(
+                            recipe == nil ? "Discard this recipe?" : "Discard your changes?",
+                            isPresented: $isConfirmingDiscard,
+                            titleVisibility: .visible
+                        ) {
                             Button("Discard Changes", role: .destructive) {
                                 dismiss()
                             }
@@ -131,7 +144,9 @@ struct RecipeEditorView: View {
                 Text(message)
             }
             .onAppear {
-                focusedField = .title
+                if recipe == nil {
+                    focusedField = .title
+                }
             }
         }
         // Swiping down would skip the discard confirmation.
@@ -211,16 +226,11 @@ struct RecipeEditorView: View {
     private func save() {
         guard draft.canSave, !isPreparingPhoto else { return }
         do {
-            let recipeID = try recipeRepository.newRecipeID()
-            // The photo goes first, so the recipe never points at a photo that isn't there.
-            let photoID = try draft.photo.map { try photoStore.save($0.prepared, recipeID: recipeID) }
-            _ = try recipeRepository.create(
-                id: recipeID,
-                title: draft.trimmedTitle,
-                ingredients: draft.trimmedIngredients,
-                steps: draft.trimmedSteps,
-                photoID: photoID
-            )
+            if let recipe {
+                try saveChanges(to: recipe)
+            } else {
+                try createRecipe()
+            }
             dismiss()
         } catch let error as RecipeError {
             saveErrorMessage = error.message
@@ -228,6 +238,40 @@ struct RecipeEditorView: View {
             saveErrorMessage = error.message
         } catch {
             saveErrorMessage = RecipeError.unknown.message
+        }
+    }
+
+    private func createRecipe() throws {
+        let recipeID = try recipeRepository.newRecipeID()
+        _ = try recipeRepository.create(
+            id: recipeID,
+            title: draft.trimmedTitle,
+            ingredients: draft.trimmedIngredients,
+            steps: draft.trimmedSteps,
+            photoID: savePhoto(recipeID: recipeID)
+        )
+    }
+
+    private func saveChanges(to recipe: Recipe) throws {
+        // The latest version, so a change made meanwhile, like a favorite, isn't undone.
+        let latest = recipeRepository.recipes.first { $0.id == recipe.id } ?? recipe
+        let photoID = try savePhoto(recipeID: recipe.id)
+        try recipeRepository.update(draft.applied(to: latest, photoID: photoID))
+        // Only once the recipe no longer points at the old photo. Firestore keeps writes in order.
+        if let oldPhotoID = latest.photoID, oldPhotoID != photoID {
+            try? photoStore.delete(photoID: oldPhotoID, recipeID: recipe.id)
+        }
+    }
+
+    /// A newly picked photo is saved before the recipe, so the recipe never points at a photo that isn't there.
+    private func savePhoto(recipeID: Recipe.ID) throws -> String? {
+        switch draft.photo {
+        case .picked(let picked):
+            return try photoStore.save(picked.prepared, recipeID: recipeID)
+        case .saved(let photoID, _):
+            return photoID
+        case nil:
+            return nil
         }
     }
 }

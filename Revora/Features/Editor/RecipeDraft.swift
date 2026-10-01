@@ -42,10 +42,16 @@ struct RecipeDraft: Equatable {
         }
     }
 
+    enum Photo: Equatable {
+        /// Already stored with the recipe being edited.
+        case saved(photoID: String, recipeID: Recipe.ID)
+        case picked(PickedPhoto)
+    }
+
     var title = ""
     var ingredients: [IngredientRow] = []
     var steps: [StepRow] = []
-    var photo: PickedPhoto?
+    var photo: Photo?
 
     var trimmedTitle: String {
         trimmed(title)
@@ -72,6 +78,26 @@ struct RecipeDraft: Equatable {
             || trimmedIngredients != original.trimmedIngredients
             || trimmedSteps != original.trimmedSteps
             || photo != original.photo
+    }
+}
+
+extension RecipeDraft {
+    /// Prefilled for editing a saved recipe.
+    init(recipe: Recipe) {
+        title = recipe.title
+        ingredients = recipe.ingredients.map { IngredientRow(quantity: $0.quantity, name: $0.name) }
+        steps = recipe.steps.map { StepRow(text: $0) }
+        photo = recipe.photoID.map { .saved(photoID: $0, recipeID: recipe.id) }
+    }
+
+    /// The recipe with this draft's edits. Fields the editor doesn't show, like favorites, stay as they are.
+    func applied(to recipe: Recipe, photoID: String?) -> Recipe {
+        var recipe = recipe
+        recipe.title = trimmedTitle
+        recipe.ingredients = trimmedIngredients
+        recipe.steps = trimmedSteps
+        recipe.photoID = photoID
+        return recipe
     }
 }
 

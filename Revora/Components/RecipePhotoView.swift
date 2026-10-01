@@ -3,7 +3,8 @@ import SwiftUI
 /// A recipe's cover photo, with a placeholder while it loads or when there isn't one.
 /// It fills whatever frame it's given, so callers set the size and shape.
 struct RecipePhotoView: View {
-    let recipe: Recipe
+    let recipeID: Recipe.ID
+    let photoID: String?
     let size: RecipePhotoStore.Size
     var placeholderFont: Font = .title2
 
@@ -14,7 +15,7 @@ struct RecipePhotoView: View {
     /// Anything already in memory shows straight away. For the full size that includes the
     /// thumbnail, which the list has usually loaded, so a header never starts out empty.
     private var image: UIImage? {
-        guard let photoID = recipe.photoID else { return nil }
+        guard let photoID else { return nil }
         return loadedImage
             ?? photoStore.cachedImage(photoID: photoID, size: size)
             ?? (size == .full ? photoStore.cachedImage(photoID: photoID, size: .thumbnail) : nil)
@@ -38,10 +39,16 @@ struct RecipePhotoView: View {
             .animation(.easeOut(duration: 0.2), value: loadedImage)
             // Decorative: the recipe's title right next to it carries the meaning.
             .accessibilityHidden(true)
-            .task(id: recipe.photoID) {
+            .task(id: photoID) {
                 loadedImage = nil
-                guard let photoID = recipe.photoID else { return }
-                loadedImage = try? await photoStore.image(photoID: photoID, recipeID: recipe.id, size: size)
+                guard let photoID else { return }
+                loadedImage = try? await photoStore.image(photoID: photoID, recipeID: recipeID, size: size)
             }
+    }
+}
+
+extension RecipePhotoView {
+    init(recipe: Recipe, size: RecipePhotoStore.Size, placeholderFont: Font = .title2) {
+        self.init(recipeID: recipe.id, photoID: recipe.photoID, size: size, placeholderFont: placeholderFont)
     }
 }

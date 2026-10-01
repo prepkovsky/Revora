@@ -6,6 +6,8 @@ struct RecipeDetailView: View {
     @Environment(RecipeRepository.self) private var recipeRepository
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @State private var isEditing = false
+
     /// Where the big title ends, and where the navigation bar ends, both in the scroll view.
     @State private var titleBottom = Double.infinity
     @State private var barBottom = 0.0
@@ -109,11 +111,19 @@ struct RecipeDetailView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .sheet(isPresented: $isEditing) {
+            RecipeEditorView(recipe: recipe)
+        }
         // The bar is see-through, so content under it still counts as visible to the scroll view.
         .onScrollGeometryChange(for: Double.self) { $0.contentInsets.top } action: { _, inset in
             barBottom = inset
         }
         .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Edit") {
+                    isEditing = true
+                }
+            }
             ToolbarItem(placement: .principal) {
                 Text(recipe.title)
                     .font(.headline)

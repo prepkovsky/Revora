@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 import UIKit
 @testable import Revora
@@ -95,8 +96,8 @@ struct RecipeDraftTests {
         #expect(draft.hasChanges(from: RecipeDraft()))
     }
 
-    private func pickedPhoto() -> RecipeDraft.PickedPhoto {
-        RecipeDraft.PickedPhoto(prepared: PreparedPhoto(full: Data(), thumbnail: Data()), preview: UIImage())
+    private func pickedPhoto() -> RecipeDraft.Photo {
+        .picked(RecipeDraft.PickedPhoto(prepared: PreparedPhoto(full: Data(), thumbnail: Data()), preview: UIImage()))
     }
 
     @Test func pickedPhotoCountsAsChange() {
@@ -120,5 +121,60 @@ struct RecipeDraftTests {
         var draft = original
         draft.photo = pickedPhoto()
         #expect(draft.hasChanges(from: original))
+    }
+
+    private let savedRecipe = Recipe(
+        id: "recipe-1",
+        title: "Pancakes",
+        ingredients: [Ingredient(name: "Flour", quantity: "200 g"), Ingredient(name: "Salt", quantity: "")],
+        steps: ["Whisk everything together.", "Fry in a hot pan."],
+        photoID: "photo-1",
+        isFavorite: true,
+        createdAt: Date(timeIntervalSince1970: 100),
+        updatedAt: Date(timeIntervalSince1970: 200),
+        lastOpenedAt: Date(timeIntervalSince1970: 300)
+    )
+
+    @Test func prefillsFromRecipe() {
+        let draft = RecipeDraft(recipe: savedRecipe)
+        #expect(draft.trimmedTitle == "Pancakes")
+        #expect(draft.trimmedIngredients == savedRecipe.ingredients)
+        #expect(draft.trimmedSteps == savedRecipe.steps)
+        #expect(draft.photo == .saved(photoID: "photo-1", recipeID: "recipe-1"))
+    }
+
+    @Test func untouchedRecipeHasNoChanges() {
+        let draft = RecipeDraft(recipe: savedRecipe)
+        #expect(!draft.hasChanges(from: RecipeDraft(recipe: savedRecipe)))
+    }
+
+    @Test func removingSavedPhotoCountsAsChange() {
+        let original = RecipeDraft(recipe: savedRecipe)
+        var draft = original
+        draft.photo = nil
+        #expect(draft.hasChanges(from: original))
+    }
+
+    @Test func replacingSavedPhotoCountsAsChange() {
+        let original = RecipeDraft(recipe: savedRecipe)
+        var draft = original
+        draft.photo = pickedPhoto()
+        #expect(draft.hasChanges(from: original))
+    }
+
+    @Test func appliesEditsAndKeepsEverythingElse() {
+        var draft = RecipeDraft(recipe: savedRecipe)
+        draft.title = "  Fluffy Pancakes "
+        draft.steps.append(.init(text: "Serve warm."))
+
+        let edited = draft.applied(to: savedRecipe, photoID: nil)
+        #expect(edited.title == "Fluffy Pancakes")
+        #expect(edited.ingredients == savedRecipe.ingredients)
+        #expect(edited.steps == savedRecipe.steps + ["Serve warm."])
+        #expect(edited.photoID == nil)
+        #expect(edited.id == savedRecipe.id)
+        #expect(edited.isFavorite)
+        #expect(edited.createdAt == savedRecipe.createdAt)
+        #expect(edited.lastOpenedAt == savedRecipe.lastOpenedAt)
     }
 }

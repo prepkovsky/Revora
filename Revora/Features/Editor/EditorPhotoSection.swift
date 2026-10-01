@@ -4,7 +4,7 @@ import SwiftUI
 /// The cover photo at the top of the editor. A picked photo is shrunk straight away,
 /// so the preview is what gets saved.
 struct EditorPhotoSection: View {
-    @Binding var photo: RecipeDraft.PickedPhoto?
+    @Binding var photo: RecipeDraft.Photo?
     @Binding var isPreparing: Bool
 
     @Environment(RecipePhotoStore.self) private var photoStore
@@ -80,16 +80,20 @@ struct EditorPhotoSection: View {
 
     private var tile: some View {
         Group {
-            if let photo {
+            switch photo {
+            case .picked(let picked):
                 Color.clear
                     .aspectRatio(4 / 3, contentMode: .fit)
                     .overlay {
-                        Image(uiImage: photo.preview)
+                        Image(uiImage: picked.preview)
                             .resizable()
                             .scaledToFill()
                     }
                     .clipped()
-            } else {
+            case .saved(let photoID, let recipeID):
+                RecipePhotoView(recipeID: recipeID, photoID: photoID, size: .full, placeholderFont: .largeTitle)
+                    .aspectRatio(4 / 3, contentMode: .fit)
+            case nil:
                 VStack(spacing: 8) {
                     Image(systemName: "photo.badge.plus")
                         .font(.largeTitle)
@@ -121,7 +125,7 @@ struct EditorPhotoSection: View {
             guard let data = try await load() else { throw PhotoError.unreadableImage }
             let prepared = try await photoStore.prepare(data)
             guard let preview = UIImage(data: prepared.full) else { throw PhotoError.unreadableImage }
-            photo = RecipeDraft.PickedPhoto(prepared: prepared, preview: preview)
+            photo = .picked(RecipeDraft.PickedPhoto(prepared: prepared, preview: preview))
         } catch let error as PhotoError {
             self.error = error
         } catch {
