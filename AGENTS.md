@@ -58,7 +58,7 @@ users/{uid}/recipes/{recipeId}
   isFavorite, createdAt, updatedAt, lastOpenedAt?
 ```
 
-Security rules: users can only read and write under their own `users/{uid}`.
+Security rules: users can only read and write under their own `users/{uid}`. The source is `firestore.rules`. It's deployed by hand in the Firebase console, so publish it there after every change.
 
 ## Conventions
 

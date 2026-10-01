@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// Deployed by hand: paste into Firebase console → Firestore Database → Rules → Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each user can only read and write their own data. Everything else is denied by default.
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
