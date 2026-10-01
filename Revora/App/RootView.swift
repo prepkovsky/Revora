@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AuthService.self) private var authService
+    @Environment(RecipeRepository.self) private var recipeRepository
 
     var body: some View {
         Group {
@@ -19,8 +20,11 @@ struct RootView: View {
                 .background(.appBackground)
             case .signedOut:
                 AuthFlow()
-            case .signedIn:
+            case .signedIn(let user):
                 MainTabView()
+                    .task(id: user.id) {
+                        await recipeRepository.observeRecipes(ownerID: user.id)
+                    }
             }
         }
         .task {

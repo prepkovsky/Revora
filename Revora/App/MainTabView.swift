@@ -27,4 +27,5 @@ struct MainTabView: View {
 #Preview {
     MainTabView()
         .environment(AuthService())
+        .environment(RecipeRepository())
 }

@@ -4,6 +4,7 @@ import SwiftUI
 @main
 struct RevoraApp: App {
     @State private var authService = AuthService()
+    @State private var recipeRepository = RecipeRepository()
 
     init() {
         FirebaseApp.configure()
@@ -13,6 +14,7 @@ struct RevoraApp: App {
         WindowGroup {
             RootView()
                 .environment(authService)
+                .environment(recipeRepository)
         }
     }
 }
