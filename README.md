@@ -44,7 +44,7 @@ Revora/
 ├── App/            App entry point, root view and tab bar
 ├── Services/       Firebase wrappers (auth, recipe storage)
 ├── Models/         Recipe data types
-├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Settings
+├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
 └── Components/     Shared reusable views
 RevoraTests/        Unit tests
 ```

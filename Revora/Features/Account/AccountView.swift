@@ -1,18 +1,18 @@
 import SwiftUI
 
-struct SettingsView: View {
+struct AccountView: View {
     @Environment(AuthService.self) private var authService
 
     @State private var logOutError: AuthError?
 
     var body: some View {
         ContentUnavailableView {
-            Label("Settings", systemImage: "gearshape")
+            Label("Account", systemImage: "person.crop.circle")
         } actions: {
             Button("Log Out", role: .destructive, action: logOut)
         }
         .background(.appBackground)
-        .navigationTitle("Settings")
+        .navigationTitle("Account")
         .alert(
             "Couldn't Log Out",
             isPresented: Binding { logOutError != nil } set: { if !$0 { logOutError = nil } },
@@ -36,7 +36,7 @@ struct SettingsView: View {
 
 #Preview {
     NavigationStack {
-        SettingsView()
+        AccountView()
     }
     .environment(AuthService())
 }

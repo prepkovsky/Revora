@@ -15,9 +15,9 @@ struct MainTabView: View {
                 }
             }
 
-            Tab("Settings", systemImage: "gearshape") {
+            Tab("Account", systemImage: "person.crop.circle") {
                 NavigationStack {
-                    SettingsView()
+                    AccountView()
                 }
             }
         }

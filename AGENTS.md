@@ -34,7 +34,7 @@ Revora/
 ├── App/            App entry point, root view (auth vs. main tabs)
 ├── Services/       AuthService, RecipeRepository (Firebase wrappers)
 ├── Models/         Recipe, Ingredient
-├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Settings
+├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
 ├── Components/     Shared reusable views
 └── Assets.xcassets
 RevoraTests/        Unit tests (Swift Testing)
@@ -48,7 +48,7 @@ RevoraTests/        Unit tests (Swift Testing)
 - `@Observable` models and services, injected through the SwiftUI environment.
 - Views don't talk to Firebase directly. They go through `AuthService` and `RecipeRepository`.
 - One `NavigationStack` per tab.
-- Tab bar: native `TabView` with three tabs: Home, Recipes and Settings. New recipes are created from a `+` button in the Recipes navigation bar, which opens the recipe editor as a sheet.
+- Tab bar: native `TabView` with three tabs: Home, Recipes and Account. New recipes are created from a `+` button in the Recipes navigation bar, which opens the recipe editor as a sheet.
 
 ### Firestore data
 
