@@ -3,9 +3,31 @@ rules_version = '2';
 // Deployed by hand: paste into Firebase console → Firestore Database → Rules → Publish.
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Each user can only read and write their own data. Everything else is denied by default.
-    match /users/{uid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // One JPEG stored as bytes, small enough to keep each user's share of the free tier.
+    function isPhoto(maxBytes) {
+      return request.resource.data.keys().hasOnly(['data'])
+        && request.resource.data.data is bytes
+        && request.resource.data.data.size() <= maxBytes;
+    }
+
+    // Each user can only reach their own recipes. Everything else is denied by default.
+    match /users/{uid}/recipes/{recipeId} {
+      allow read, write: if isOwner(uid);
+
+      // Photos never change once saved: they're only created or deleted, never overwritten.
+      match /photos/{photoId} {
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid) && isPhoto(500 * 1024);
+      }
+
+      match /thumbnails/{photoId} {
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid) && isPhoto(100 * 1024);
+      }
     }
   }
 }

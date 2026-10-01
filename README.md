@@ -2,7 +2,7 @@
 
 A simple recipe app for iPhone and iPad. Sign up with email and password, save your own recipes (title, ingredients and steps), and mark your favorites.
 
-> **Status:** early development. The app shell, navigation, sign-up, log in and password reset are in place; recipe storage is next.
+> **Status:** early development. Accounts, and creating, listing and viewing recipes, are in place. Cover photos are next.
 
 ## Requirements
 
@@ -51,4 +51,4 @@ RevoraTests/        Unit tests
 
 Some folders appear only once their first files are added.
 
-Built with SwiftUI in Swift 6 language mode. Recipes will be stored in Firestore under `users/{uid}/recipes`, with security rules that let users read and write only their own data.
+Built with SwiftUI in Swift 6 language mode. Recipes and their cover photos are stored in Firestore under `users/{uid}/recipes`, so the project runs on Firebase's free plan. The security rules in `firestore.rules` let users read and write only their own data; publish them in the Firebase console after changing them.

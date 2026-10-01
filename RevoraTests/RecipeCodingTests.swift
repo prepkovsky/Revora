@@ -13,6 +13,7 @@ struct RecipeCodingTests {
             Ingredient(name: "Milk", quantity: "300 ml"),
         ],
         steps: ["Whisk everything together.", "Fry in a hot pan."],
+        photoID: "photo-1",
         isFavorite: true,
         // Whole seconds, so the round trip through Timestamp compares exactly.
         createdAt: Date(timeIntervalSince1970: 1_790_000_000),
@@ -30,8 +31,9 @@ struct RecipeCodingTests {
         let data = try Firestore.Encoder().encode(recipe)
 
         #expect(Set(data.keys) == [
-            "title", "ingredients", "steps", "isFavorite", "createdAt", "updatedAt", "lastOpenedAt",
+            "title", "ingredients", "steps", "photoID", "isFavorite", "createdAt", "updatedAt", "lastOpenedAt",
         ])
+        #expect(data["photoID"] as? String == "photo-1")
         #expect(data["title"] as? String == "Pancakes")
         #expect(data["steps"] as? [String] == recipe.steps)
         #expect(data["isFavorite"] as? Bool == true)
@@ -48,6 +50,19 @@ struct RecipeCodingTests {
         unopened.lastOpenedAt = nil
         let data = try Firestore.Encoder().encode(unopened)
         #expect(data["lastOpenedAt"] == nil)
+    }
+
+    @Test func leavesOutMissingPhoto() throws {
+        var withoutPhoto = recipe
+        withoutPhoto.photoID = nil
+        let data = try Firestore.Encoder().encode(withoutPhoto)
+        #expect(data["photoID"] == nil)
+    }
+
+    @Test func decodesRecipeSavedBeforePhotos() throws {
+        var data = try Firestore.Encoder().encode(recipe)
+        data["photoID"] = nil
+        #expect(try decode(data).photoID == nil)
     }
 
     @Test func roundTrips() throws {
@@ -67,9 +82,9 @@ struct RecipeCodingTests {
     }
 
     @Test func ignoresUnknownFields() throws {
-        // A newer app version may add fields, e.g. a photo, that this version doesn't know.
+        // A newer app version may add fields that this version doesn't know.
         var data = try Firestore.Encoder().encode(recipe)
-        data["photoID"] = "photo-1"
+        data["servings"] = 4
         #expect(try decode(data) == recipe)
     }
 

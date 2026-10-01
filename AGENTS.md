@@ -32,7 +32,7 @@ The app needs `Revora/GoogleService-Info.plist` to build and run. It is gitignor
 ```
 Revora/
 ├── App/            App entry point, root view (auth vs. main tabs)
-├── Services/       AuthService, RecipeRepository (Firebase wrappers)
+├── Services/       AuthService, RecipeRepository, RecipePhotoStore (Firebase wrappers)
 ├── Models/         Recipe, Ingredient
 ├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
 ├── Components/     Shared reusable views
@@ -46,7 +46,7 @@ RevoraTests/        Unit tests (Swift Testing)
 ## Architecture
 
 - `@Observable` models and services, injected through the SwiftUI environment.
-- Views don't talk to Firebase directly. They go through `AuthService` and `RecipeRepository`.
+- Views don't talk to Firebase directly. They go through `AuthService`, `RecipeRepository` and `RecipePhotoStore`.
 - One `NavigationStack` per tab.
 - Tab bar: native `TabView` with three tabs: Home, Recipes and Account. New recipes are created from a `+` button in the Recipes navigation bar, which opens the recipe editor as a sheet.
 
@@ -54,11 +54,16 @@ RevoraTests/        Unit tests (Swift Testing)
 
 ```
 users/{uid}/recipes/{recipeId}
-  title, ingredients [{ name, quantity }], steps [String],
+  title, ingredients [{ name, quantity }], steps [String], photoID?,
   isFavorite, createdAt, updatedAt, lastOpenedAt?
+
+users/{uid}/recipes/{recipeId}/photos/{photoID}       data: Bytes (JPEG, ≤ 500 KiB)
+users/{uid}/recipes/{recipeId}/thumbnails/{photoID}   data: Bytes (JPEG, ≤ 100 KiB)
 ```
 
-Security rules: users can only read and write under their own `users/{uid}`. The source is `firestore.rules`. It's deployed by hand in the Firebase console, so publish it there after every change.
+Cover photos live in Firestore, not Cloud Storage, so the project stays on the free plan. All photo access goes through `RecipePhotoStore`, so a later move to Cloud Storage only changes that one type. Photos are immutable: a new photo gets a new `photoID`, and the old documents are deleted.
+
+Security rules: users can only read and write their own recipes and photos. Photo documents can only be created or deleted, and must hold a single `data` field within the size limit above. The source is `firestore.rules`. It's deployed by hand in the Firebase console, so publish it there after every change.
 
 ## Conventions
 
