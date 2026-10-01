@@ -43,19 +43,29 @@ final class RecipeRepository {
     // Writes go to Firestore's local cache and sync in the background. Awaiting them
     // would wait for the server, which never answers while offline.
 
-    /// The returned recipe has its ID already, generated on the device.
-    func create(title: String, ingredients: [Ingredient], steps: [String]) throws(RecipeError) -> Recipe {
-        let document = try recipesCollection().document()
+    /// Generated on the device, so a photo can be saved under the recipe before the recipe itself.
+    func newRecipeID() throws(RecipeError) -> Recipe.ID {
+        try recipesCollection().document().documentID
+    }
+
+    func create(
+        id: Recipe.ID,
+        title: String,
+        ingredients: [Ingredient],
+        steps: [String],
+        photoID: String? = nil
+    ) throws(RecipeError) -> Recipe {
         let now = Date.now
         let recipe = Recipe(
-            id: document.documentID,
+            id: id,
             title: title,
             ingredients: ingredients,
             steps: steps,
+            photoID: photoID,
             createdAt: now,
             updatedAt: now
         )
-        try write(recipe, to: document)
+        try write(recipe, to: recipesCollection().document(id))
         return recipe
     }
 

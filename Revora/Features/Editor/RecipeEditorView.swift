@@ -12,12 +12,14 @@ struct RecipeEditorView: View {
     }
 
     @Environment(RecipeRepository.self) private var recipeRepository
+    @Environment(RecipePhotoStore.self) private var photoStore
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private let originalDraft = RecipeDraft()
     @State private var draft = RecipeDraft()
-    @State private var saveError: RecipeError?
+    @State private var isPreparingPhoto = false
+    @State private var saveErrorMessage: String?
     @State private var isConfirmingDiscard = false
     @FocusState private var focusedField: Field?
     @ScaledMetric private var quantityWidth = 90.0
@@ -34,6 +36,8 @@ struct RecipeEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
+                EditorPhotoSection(photo: $draft.photo, isPreparing: $isPreparingPhoto)
+
                 Section("Title") {
                     TextField("Title", text: $draft.title, prompt: Text("e.g. Banana Bread"))
                         .focused($focusedField, equals: .title)
@@ -114,17 +118,17 @@ struct RecipeEditorView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", action: save)
-                        .disabled(!draft.canSave)
+                        .disabled(!draft.canSave || isPreparingPhoto)
                 }
             }
             .alert(
                 "Couldn't Save Recipe",
-                isPresented: Binding { saveError != nil } set: { if !$0 { saveError = nil } },
-                presenting: saveError
+                isPresented: Binding { saveErrorMessage != nil } set: { if !$0 { saveErrorMessage = nil } },
+                presenting: saveErrorMessage
             ) { _ in
                 Button("OK") {}
-            } message: { error in
-                Text(error.message)
+            } message: { message in
+                Text(message)
             }
             .onAppear {
                 focusedField = .title
@@ -205,16 +209,25 @@ struct RecipeEditorView: View {
     }
 
     private func save() {
-        guard draft.canSave else { return }
-        do throws(RecipeError) {
+        guard draft.canSave, !isPreparingPhoto else { return }
+        do {
+            let recipeID = try recipeRepository.newRecipeID()
+            // The photo goes first, so the recipe never points at a photo that isn't there.
+            let photoID = try draft.photo.map { try photoStore.save($0.prepared, recipeID: recipeID) }
             _ = try recipeRepository.create(
+                id: recipeID,
                 title: draft.trimmedTitle,
                 ingredients: draft.trimmedIngredients,
-                steps: draft.trimmedSteps
+                steps: draft.trimmedSteps,
+                photoID: photoID
             )
             dismiss()
+        } catch let error as RecipeError {
+            saveErrorMessage = error.message
+        } catch let error as PhotoError {
+            saveErrorMessage = error.message
         } catch {
-            saveError = error
+            saveErrorMessage = RecipeError.unknown.message
         }
     }
 }
@@ -222,4 +235,5 @@ struct RecipeEditorView: View {
 #Preview {
     RecipeEditorView()
         .environment(RecipeRepository())
+        .environment(RecipePhotoStore())
 }

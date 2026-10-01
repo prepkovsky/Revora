@@ -1,4 +1,4 @@
-import Foundation
+import UIKit
 
 /// What the editor holds while people type, before it's saved as a `Recipe`.
 struct RecipeDraft: Equatable {
@@ -30,9 +30,22 @@ struct RecipeDraft: Equatable {
         }
     }
 
+    /// A cover photo picked in the editor and already shrunk, so saving is quick.
+    struct PickedPhoto: Identifiable, Equatable {
+        let id = UUID()
+        let prepared: PreparedPhoto
+        let preview: UIImage
+
+        /// By ID, so checking for changes never compares the image data.
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.id == rhs.id
+        }
+    }
+
     var title = ""
     var ingredients: [IngredientRow] = []
     var steps: [StepRow] = []
+    var photo: PickedPhoto?
 
     var trimmedTitle: String {
         trimmed(title)
@@ -58,6 +71,7 @@ struct RecipeDraft: Equatable {
         trimmedTitle != original.trimmedTitle
             || trimmedIngredients != original.trimmedIngredients
             || trimmedSteps != original.trimmedSteps
+            || photo != original.photo
     }
 }
 

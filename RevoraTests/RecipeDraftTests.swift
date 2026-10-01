@@ -1,4 +1,5 @@
 import Testing
+import UIKit
 @testable import Revora
 
 struct RecipeDraftTests {
@@ -92,5 +93,32 @@ struct RecipeDraftTests {
     ])
     func contentCountsAsChanges(_ draft: RecipeDraft) {
         #expect(draft.hasChanges(from: RecipeDraft()))
+    }
+
+    private func pickedPhoto() -> RecipeDraft.PickedPhoto {
+        RecipeDraft.PickedPhoto(prepared: PreparedPhoto(full: Data(), thumbnail: Data()), preview: UIImage())
+    }
+
+    @Test func pickedPhotoCountsAsChange() {
+        #expect(RecipeDraft(photo: pickedPhoto()).hasChanges(from: RecipeDraft()))
+    }
+
+    @Test func removedPhotoCountsAsChange() {
+        let original = RecipeDraft(photo: pickedPhoto())
+        var draft = original
+        draft.photo = nil
+        #expect(draft.hasChanges(from: original))
+    }
+
+    @Test func samePhotoIsNoChange() {
+        let original = RecipeDraft(photo: pickedPhoto())
+        #expect(!original.hasChanges(from: original))
+    }
+
+    @Test func differentPhotoCountsAsChange() {
+        let original = RecipeDraft(photo: pickedPhoto())
+        var draft = original
+        draft.photo = pickedPhoto()
+        #expect(draft.hasChanges(from: original))
     }
 }
