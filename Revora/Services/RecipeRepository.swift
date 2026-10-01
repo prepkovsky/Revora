@@ -85,8 +85,17 @@ final class RecipeRepository {
         )
     }
 
-    func delete(_ recipe: Recipe) throws(RecipeError) {
+    /// The recipe goes first, then its photo, so a recipe never points at a missing photo.
+    /// Firestore doesn't delete a document's subcollections with it, so the photo is deleted
+    /// separately. If that fails, it's only logged: nothing points at the photo anymore.
+    func delete(_ recipe: Recipe, photoStore: RecipePhotoStore) throws(RecipeError) {
         try recipesCollection().document(recipe.id).delete(completion: Self.logFailure("Delete"))
+        guard let photoID = recipe.photoID else { return }
+        do throws(PhotoError) {
+            try photoStore.delete(photoID: photoID, recipeID: recipe.id)
+        } catch {
+            Self.logger.error("Deleting the photo of a deleted recipe failed: \(error)")
+        }
     }
 
     private func write(_ recipe: Recipe, to document: DocumentReference) throws(RecipeError) {

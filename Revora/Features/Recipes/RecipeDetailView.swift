@@ -4,9 +4,15 @@ struct RecipeDetailView: View {
     let recipeID: Recipe.ID
 
     @Environment(RecipeRepository.self) private var recipeRepository
+    @Environment(RecipePhotoStore.self) private var photoStore
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @State private var isEditing = false
+    @State private var isConfirmingDelete = false
+    @State private var deleteError: RecipeError?
+    /// Kept on screen while the view goes away, instead of "Recipe Not Found".
+    @State private var deletedRecipe: Recipe?
 
     /// Where the big title ends, and where the navigation bar ends, both in the scroll view.
     @State private var titleBottom = Double.infinity
@@ -26,7 +32,7 @@ struct RecipeDetailView: View {
 
     /// Looked up live, so edits show up straight away.
     private var recipe: Recipe? {
-        recipeRepository.recipes.first { $0.id == recipeID }
+        recipeRepository.recipes.first { $0.id == recipeID } ?? deletedRecipe
     }
 
     var body: some View {
@@ -47,6 +53,17 @@ struct RecipeDetailView: View {
         .task(id: recipeID) {
             guard let recipe else { return }
             try? recipeRepository.markOpened(recipe)
+        }
+    }
+
+    private func delete(_ recipe: Recipe) {
+        do throws(RecipeError) {
+            deletedRecipe = recipe
+            try recipeRepository.delete(recipe, photoStore: photoStore)
+            dismiss()
+        } catch {
+            deletedRecipe = nil
+            deleteError = error
         }
     }
 
@@ -109,10 +126,39 @@ struct RecipeDetailView: View {
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
             }
+
+            // At the bottom, like Calendar's Delete Event, so it's hard to hit by accident.
+            Section {
+                Button("Delete Recipe", role: .destructive) {
+                    isConfirmingDelete = true
+                }
+                .frame(maxWidth: .infinity)
+                .confirmationDialog(
+                    "Delete \"\(recipe.title)\"?",
+                    isPresented: $isConfirmingDelete,
+                    titleVisibility: .visible
+                ) {
+                    Button("Delete Recipe", role: .destructive) {
+                        delete(recipe)
+                    }
+                } message: {
+                    Text("This can't be undone.")
+                }
+            }
+            .listRowBackground(Color.surface)
         }
         .scrollContentBackground(.hidden)
         .sheet(isPresented: $isEditing) {
             RecipeEditorView(recipe: recipe)
+        }
+        .alert(
+            "Couldn't Delete Recipe",
+            isPresented: Binding { deleteError != nil } set: { if !$0 { deleteError = nil } },
+            presenting: deleteError
+        ) { _ in
+            Button("OK") {}
+        } message: { error in
+            Text(error.message)
         }
         // The bar is see-through, so content under it still counts as visible to the scroll view.
         .onScrollGeometryChange(for: Double.self) { $0.contentInsets.top } action: { _, inset in
