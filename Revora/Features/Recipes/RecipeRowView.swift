@@ -1,16 +1,22 @@
 import SwiftUI
 
-/// A recipe in a list. A cover thumbnail would go before the text.
+/// A recipe in a list, with its cover thumbnail or a placeholder, so titles line up.
 struct RecipeRowView: View {
     let recipe: Recipe
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(recipe.title)
-                .font(.headline)
-            summary
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            RecipePhotoView(recipe: recipe, size: .thumbnail)
+                .frame(width: 56, height: 56)
+                .clipShape(.rect(cornerRadius: 10))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(recipe.title)
+                    .font(.headline)
+                summary
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(.vertical, 2)
     }
@@ -39,4 +45,5 @@ struct RecipeRowView: View {
         ))
         RecipeRowView(recipe: Recipe(id: "2", title: "Banana Bread", ingredients: [], steps: [], createdAt: .now, updatedAt: .now))
     }
+    .environment(RecipePhotoStore())
 }

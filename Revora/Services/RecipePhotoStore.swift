@@ -45,6 +45,11 @@ final class RecipePhotoStore {
         batch.commit(completion: Self.logFailure("Deleting photo"))
     }
 
+    /// Only what's already in memory, so a view can show it without a loading flash.
+    func cachedImage(photoID: String, size: Size) -> UIImage? {
+        images.object(forKey: Self.cacheKey(size, photoID: photoID))
+    }
+
     /// A photo never changes once saved, so the device's cache is tried before the server.
     func image(photoID: String, recipeID: Recipe.ID, size: Size) async throws(PhotoError) -> UIImage {
         let key = Self.cacheKey(size, photoID: photoID)
