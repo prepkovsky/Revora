@@ -46,4 +46,51 @@ struct RecipeDraftTests {
         #expect(!RecipeDraft(ingredients: [.init(quantity: "2", name: "Eggs")]).canSave)
         #expect(RecipeDraft(title: "Omelette").canSave)
     }
+
+    @Test func stepsAreTrimmedInOrderWithoutBlanks() {
+        let draft = RecipeDraft(steps: [
+            .init(text: " Whisk everything. "),
+            .init(text: " \n"),
+            .init(text: "Fry in a hot pan."),
+        ])
+        #expect(draft.trimmedSteps == ["Whisk everything.", "Fry in a hot pan."])
+    }
+
+    @Test(arguments: [
+        ("Whisk\n", "Whisk"),
+        ("\nWhisk", "Whisk"),
+        ("Whisk\nthen fry", "Whisk then fry"),
+        ("Whisk\r\n", "Whisk"),
+    ])
+    func stepLineBreaksAreRemoved(text: String, expected: String) {
+        var step = RecipeDraft.StepRow(text: text)
+        let removed = step.removeLineBreaks()
+        #expect(removed)
+        #expect(step.text == expected)
+    }
+
+    @Test func stepWithoutLineBreaksIsUnchanged() {
+        var step = RecipeDraft.StepRow(text: "Whisk everything.")
+        let removed = step.removeLineBreaks()
+        #expect(!removed)
+        #expect(step.text == "Whisk everything.")
+    }
+
+    @Test func emptyDraftHasNoChanges() {
+        let draft = RecipeDraft(
+            title: "  ",
+            ingredients: [.init()],
+            steps: [.init(text: "\n")]
+        )
+        #expect(!draft.hasChanges(from: RecipeDraft()))
+    }
+
+    @Test(arguments: [
+        RecipeDraft(title: "Pancakes"),
+        RecipeDraft(ingredients: [.init(quantity: "2", name: "")]),
+        RecipeDraft(steps: [.init(text: "Whisk")]),
+    ])
+    func contentCountsAsChanges(_ draft: RecipeDraft) {
+        #expect(draft.hasChanges(from: RecipeDraft()))
+    }
 }

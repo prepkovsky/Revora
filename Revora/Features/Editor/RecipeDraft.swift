@@ -13,8 +13,26 @@ struct RecipeDraft: Equatable {
         }
     }
 
+    struct StepRow: Identifiable, Equatable {
+        let id = UUID()
+        var text = ""
+
+        var isBlank: Bool {
+            trimmed(text).isEmpty
+        }
+
+        /// Each step is one paragraph, so Return moves on to the next step instead of
+        /// starting a new line. Returns whether there was a line break to remove.
+        mutating func removeLineBreaks() -> Bool {
+            guard text.contains(where: \.isNewline) else { return false }
+            text = text.split(whereSeparator: \.isNewline).joined(separator: " ")
+            return true
+        }
+    }
+
     var title = ""
     var ingredients: [IngredientRow] = []
+    var steps: [StepRow] = []
 
     var trimmedTitle: String {
         trimmed(title)
@@ -27,8 +45,19 @@ struct RecipeDraft: Equatable {
             .map { Ingredient(name: trimmed($0.name), quantity: trimmed($0.quantity)) }
     }
 
+    var trimmedSteps: [String] {
+        steps.filter { !$0.isBlank }.map { trimmed($0.text) }
+    }
+
     var canSave: Bool {
         !trimmedTitle.isEmpty
+    }
+
+    /// Compares what would be saved, so blank rows and stray spaces don't count as changes.
+    func hasChanges(from original: RecipeDraft) -> Bool {
+        trimmedTitle != original.trimmedTitle
+            || trimmedIngredients != original.trimmedIngredients
+            || trimmedSteps != original.trimmedSteps
     }
 }
 
