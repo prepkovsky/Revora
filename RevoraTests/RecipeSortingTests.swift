@@ -3,14 +3,21 @@ import Testing
 @testable import Revora
 
 struct RecipeSortingTests {
-    private func recipe(_ title: String, id: String? = nil, created: TimeInterval = 0) -> Recipe {
+    private func recipe(
+        _ title: String,
+        id: String? = nil,
+        created: TimeInterval = 0,
+        updated: TimeInterval? = nil,
+        opened: TimeInterval? = nil
+    ) -> Recipe {
         Recipe(
             id: id ?? title,
             title: title,
             ingredients: [],
             steps: [],
             createdAt: Date(timeIntervalSince1970: created),
-            updatedAt: Date(timeIntervalSince1970: created)
+            updatedAt: Date(timeIntervalSince1970: updated ?? created),
+            lastOpenedAt: opened.map(Date.init(timeIntervalSince1970:))
         )
     }
 
@@ -34,5 +41,28 @@ struct RecipeSortingTests {
             recipe("Pancakes", id: "older", created: 100),
         ]
         #expect(recipes.sortedByTitle().map(\.id) == ["older", "newer"])
+    }
+
+    @Test func recentPutsLatestUseFirst() {
+        let recipes = [
+            recipe("Apple Pie", created: 100, opened: 400),
+            recipe("Banana Bread", created: 50, updated: 300),
+            recipe("Pancakes", created: 200),
+        ]
+        #expect(recipes.sortedByRecent().map(\.title) == ["Apple Pie", "Banana Bread", "Pancakes"])
+    }
+
+    @Test func lastUsedIsTheLaterOfOpenedAndUpdated() {
+        #expect(recipe("Opened later", updated: 100, opened: 200).lastUsedAt == Date(timeIntervalSince1970: 200))
+        #expect(recipe("Edited later", updated: 300, opened: 200).lastUsedAt == Date(timeIntervalSince1970: 300))
+        #expect(recipe("Never opened", updated: 100).lastUsedAt == Date(timeIntervalSince1970: 100))
+    }
+
+    @Test func recentTiesGoToTheNewerRecipe() {
+        let recipes = [
+            recipe("Older", created: 100, updated: 500),
+            recipe("Newer", created: 200, updated: 500),
+        ]
+        #expect(recipes.sortedByRecent().map(\.title) == ["Newer", "Older"])
     }
 }

@@ -12,4 +12,19 @@ extension Sequence<Recipe> {
             }
         }
     }
+
+    /// Most recently used first. Ties go to the newer recipe, so the order never jumps around.
+    func sortedByRecent() -> [Recipe] {
+        sorted { first, second in
+            (first.lastUsedAt, first.createdAt, first.id) > (second.lastUsedAt, second.createdAt, second.id)
+        }
+    }
+}
+
+extension Recipe {
+    /// When the recipe was last opened, created or edited. Creating counts so a new recipe
+    /// shows up in Recent before anyone opens it; editing already happens from the open recipe.
+    var lastUsedAt: Date {
+        max(updatedAt, lastOpenedAt ?? updatedAt)
+    }
 }
