@@ -195,8 +195,8 @@ struct RecipeEditorView: View {
         } else if !row.isBlank {
             addIngredient()
         } else {
-            draft.ingredients.remove(at: index)
             focusFirstStep()
+            removeAfterFocusMoves { $0.ingredients.removeAll { $0.id == row.id } }
         }
     }
 
@@ -210,8 +210,17 @@ struct RecipeEditorView: View {
         } else if !step.isBlank {
             addStep()
         } else {
-            draft.steps.remove(at: index)
             focusedField = nil
+            removeAfterFocusMoves { $0.steps.removeAll { $0.id == step.id } }
+        }
+    }
+
+    /// A field that's losing focus writes its text back to its row, and a step's
+    /// multi-line field crashed when that row was already gone. So the row goes
+    /// once focus has moved on.
+    private func removeAfterFocusMoves(_ removal: @escaping (inout RecipeDraft) -> Void) {
+        Task {
+            removal(&draft)
         }
     }
 
