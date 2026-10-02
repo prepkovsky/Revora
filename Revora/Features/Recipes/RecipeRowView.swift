@@ -17,6 +17,14 @@ struct RecipeRowView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+
+            if recipe.isFavorite {
+                Spacer()
+                Image(systemName: "heart.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(.tint)
+                    .accessibilityLabel("Favorite")
+            }
         }
         .padding(.vertical, 2)
     }
@@ -43,7 +51,7 @@ struct RecipeRowView: View {
             createdAt: .now,
             updatedAt: .now
         ))
-        RecipeRowView(recipe: Recipe(id: "2", title: "Banana Bread", ingredients: [], steps: [], createdAt: .now, updatedAt: .now))
+        RecipeRowView(recipe: Recipe(id: "2", title: "Banana Bread", ingredients: [], steps: [], isFavorite: true, createdAt: .now, updatedAt: .now))
     }
     .environment(RecipePhotoStore())
 }

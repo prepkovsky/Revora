@@ -11,6 +11,7 @@ struct RecipeDetailView: View {
     @State private var isEditing = false
     @State private var isConfirmingDelete = false
     @State private var deleteError: RecipeError?
+    @State private var favoriteError: RecipeError?
     /// Kept on screen while the view goes away, instead of "Recipe Not Found".
     @State private var deletedRecipe: Recipe?
 
@@ -53,6 +54,14 @@ struct RecipeDetailView: View {
         .task(id: recipeID) {
             guard let recipe else { return }
             try? recipeRepository.markOpened(recipe)
+        }
+    }
+
+    private func setFavorite(_ isFavorite: Bool, for recipe: Recipe) {
+        do throws(RecipeError) {
+            try recipeRepository.setFavorite(isFavorite, for: recipe)
+        } catch {
+            favoriteError = error
         }
     }
 
@@ -151,20 +160,22 @@ struct RecipeDetailView: View {
         .sheet(isPresented: $isEditing) {
             RecipeEditorView(recipe: recipe)
         }
-        .alert(
-            "Couldn't Delete Recipe",
-            isPresented: Binding { deleteError != nil } set: { if !$0 { deleteError = nil } },
-            presenting: deleteError
-        ) { _ in
-            Button("OK") {}
-        } message: { error in
-            Text(error.message)
-        }
+        .recipeErrorAlert("Couldn't Delete Recipe", error: $deleteError)
+        .recipeErrorAlert("Couldn't Update Favorites", error: $favoriteError)
         // The bar is see-through, so content under it still counts as visible to the scroll view.
         .onScrollGeometryChange(for: Double.self) { $0.contentInsets.top } action: { _, inset in
             barBottom = inset
         }
         .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button(
+                    recipe.isFavorite ? "Unfavorite" : "Favorite",
+                    systemImage: recipe.isFavorite ? "heart.fill" : "heart"
+                ) {
+                    setFavorite(!recipe.isFavorite, for: recipe)
+                }
+                .contentTransition(.symbolEffect(.replace))
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button("Edit") {
                     isEditing = true

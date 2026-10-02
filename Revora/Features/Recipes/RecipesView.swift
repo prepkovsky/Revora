@@ -7,6 +7,7 @@ struct RecipesView: View {
     @State private var isShowingEditor = false
     @State private var recipeToDelete: Recipe?
     @State private var deleteError: RecipeError?
+    @State private var favoriteError: RecipeError?
 
     var body: some View {
         content
@@ -25,15 +26,8 @@ struct RecipesView: View {
             .navigationDestination(for: Recipe.self) { recipe in
                 RecipeDetailView(recipeID: recipe.id)
             }
-            .alert(
-                "Couldn't Delete Recipe",
-                isPresented: Binding { deleteError != nil } set: { if !$0 { deleteError = nil } },
-                presenting: deleteError
-            ) { _ in
-                Button("OK") {}
-            } message: { error in
-                Text(error.message)
-            }
+            .recipeErrorAlert("Couldn't Delete Recipe", error: $deleteError)
+            .recipeErrorAlert("Couldn't Update Favorites", error: $favoriteError)
     }
 
     @ViewBuilder private var content: some View {
@@ -55,6 +49,16 @@ struct RecipesView: View {
             List(recipeRepository.recipes.sortedByTitle()) { recipe in
                 NavigationLink(value: recipe) {
                     RecipeRowView(recipe: recipe)
+                }
+                // A full swipe is fine here: it's undone by swiping again.
+                .swipeActions(edge: .leading) {
+                    Button(
+                        recipe.isFavorite ? "Unfavorite" : "Favorite",
+                        systemImage: recipe.isFavorite ? "heart.slash" : "heart"
+                    ) {
+                        setFavorite(!recipe.isFavorite, for: recipe)
+                    }
+                    .tint(.secondaryAccent)
                 }
                 // No full swipe, and a confirmation, because deleting can't be undone.
                 // Not the destructive role: that slides the row out before anyone has confirmed.
@@ -79,6 +83,14 @@ struct RecipesView: View {
                 .listRowBackground(Color.surface)
             }
             .scrollContentBackground(.hidden)
+        }
+    }
+
+    private func setFavorite(_ isFavorite: Bool, for recipe: Recipe) {
+        do throws(RecipeError) {
+            try recipeRepository.setFavorite(isFavorite, for: recipe)
+        } catch {
+            favoriteError = error
         }
     }
 

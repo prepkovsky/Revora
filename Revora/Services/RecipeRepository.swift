@@ -85,6 +85,14 @@ final class RecipeRepository {
         )
     }
 
+    /// Only touches `isFavorite`, so a favorite doesn't count as an edit and move up in Recent.
+    func setFavorite(_ isFavorite: Bool, for recipe: Recipe) throws(RecipeError) {
+        try recipesCollection().document(recipe.id).updateData(
+            [Recipe.CodingKeys.isFavorite.stringValue: isFavorite],
+            completion: Self.logFailure("Favorite")
+        )
+    }
+
     /// The recipe goes first, then its photo, so a recipe never points at a missing photo.
     /// Firestore doesn't delete a document's subcollections with it, so the photo is deleted
     /// separately. If that fails, it's only logged: nothing points at the photo anymore.
