@@ -3,12 +3,12 @@ import SwiftUI
 struct RecipesView: View {
     @Environment(RecipeRepository.self) private var recipeRepository
     @Environment(RecipePhotoStore.self) private var photoStore
+    @Environment(AppNavigation.self) private var navigation
 
     @State private var isShowingEditor = false
     @State private var recipeToDelete: Recipe?
     @State private var deleteError: RecipeError?
     @State private var favoriteError: RecipeError?
-    @State private var filter = RecipeFilter.all
     @State private var searchText = ""
 
     var body: some View {
@@ -48,15 +48,16 @@ struct RecipesView: View {
                 .buttonStyle(.primary)
             }
         } else {
-            recipeList(filter.apply(to: recipeRepository.recipes, searchText: searchText))
+            recipeList(navigation.recipeFilter.apply(to: recipeRepository.recipes, searchText: searchText))
         }
     }
 
     private func recipeList(_ recipes: [Recipe]) -> some View {
-        List {
+        @Bindable var navigation = navigation
+        return List {
             // In the list rather than pinned under the bar, so the search field
             // can slide out above it without the two overlapping.
-            Picker("Show", selection: $filter) {
+            Picker("Show", selection: $navigation.recipeFilter) {
                 ForEach(RecipeFilter.allCases) { filter in
                     Text(filter.title)
                 }
@@ -119,7 +120,7 @@ struct RecipesView: View {
         if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             ContentUnavailableView.search(text: searchText)
         } else {
-            switch filter {
+            switch navigation.recipeFilter {
             case .recent:
                 ContentUnavailableView {
                     Label(displayTitle: "No Recent Recipes", systemImage: "clock")
@@ -161,4 +162,5 @@ struct RecipesView: View {
     }
     .environment(RecipeRepository())
     .environment(RecipePhotoStore())
+    .environment(AppNavigation())
 }
