@@ -8,6 +8,8 @@ nonisolated struct Recipe: Identifiable, Hashable, Sendable {
     var ingredients: [Ingredient]
     /// In order.
     var steps: [String]
+    /// In `MealType`'s order. Empty when none are picked.
+    var mealTypes: [MealType] = []
     /// The cover photo, stored under the recipe in `photos` and `thumbnails`. `nil` when there's none.
     var photoID: String?
     var isFavorite = false
@@ -24,7 +26,7 @@ extension Recipe: Codable {
 
     /// Also the Firestore field names, for updating a single field.
     enum CodingKeys: String, CodingKey {
-        case title, ingredients, steps, photoID, isFavorite, createdAt, updatedAt, lastOpenedAt
+        case title, ingredients, steps, mealTypes, photoID, isFavorite, createdAt, updatedAt, lastOpenedAt
     }
 
     init(from decoder: any Decoder) throws {
@@ -39,6 +41,10 @@ extension Recipe: Codable {
         title = try container.decode(String.self, forKey: .title)
         ingredients = try container.decode([Ingredient].self, forKey: .ingredients)
         steps = try container.decode([String].self, forKey: .steps)
+        // Missing on recipes saved before meal types. Skips values a newer app version may add.
+        mealTypes = try container.decodeIfPresent([String].self, forKey: .mealTypes)?
+            .compactMap(MealType.init(rawValue:))
+            .inDisplayOrder() ?? []
         photoID = try container.decodeIfPresent(String.self, forKey: .photoID)
         isFavorite = try container.decode(Bool.self, forKey: .isFavorite)
         createdAt = try container.decode(Date.self, forKey: .createdAt)

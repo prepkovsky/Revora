@@ -29,6 +29,16 @@ enum Greeting: Equatable {
         }
     }
 
+    /// The meal people are most likely planning, which Surprise Me looks for first.
+    var mealType: MealType {
+        switch self {
+        case .morning: .breakfast
+        case .afternoon: .lunch
+        case .evening: .dinner
+        case .lateNight: .snack
+        }
+    }
+
     /// The line under the greeting, for the meal people are most likely planning.
     var prompt: LocalizedStringResource {
         switch self {

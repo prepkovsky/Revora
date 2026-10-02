@@ -13,6 +13,7 @@ struct RecipeCodingTests {
             Ingredient(name: "Milk", quantity: "300 ml"),
         ],
         steps: ["Whisk everything together.", "Fry in a hot pan."],
+        mealTypes: [.breakfast, .dessert],
         photoID: "photo-1",
         isFavorite: true,
         // Whole seconds, so the round trip through Timestamp compares exactly.
@@ -31,8 +32,9 @@ struct RecipeCodingTests {
         let data = try Firestore.Encoder().encode(recipe)
 
         #expect(Set(data.keys) == [
-            "title", "ingredients", "steps", "photoID", "isFavorite", "createdAt", "updatedAt", "lastOpenedAt",
+            "title", "ingredients", "steps", "mealTypes", "photoID", "isFavorite", "createdAt", "updatedAt", "lastOpenedAt",
         ])
+        #expect(data["mealTypes"] as? [String] == ["breakfast", "dessert"])
         #expect(data["photoID"] as? String == "photo-1")
         #expect(data["title"] as? String == "Pancakes")
         #expect(data["steps"] as? [String] == recipe.steps)
@@ -79,6 +81,18 @@ struct RecipeCodingTests {
         var data = try Firestore.Encoder().encode(recipe)
         data["lastOpenedAt"] = nil
         #expect(try decode(data).lastOpenedAt == nil)
+    }
+
+    @Test func decodesRecipeSavedBeforeMealTypes() throws {
+        var data = try Firestore.Encoder().encode(recipe)
+        data["mealTypes"] = nil
+        #expect(try decode(data).mealTypes.isEmpty)
+    }
+
+    @Test func skipsMealTypesFromANewerVersionAndKeepsTheOrder() throws {
+        var data = try Firestore.Encoder().encode(recipe)
+        data["mealTypes"] = ["dessert", "brunch", "breakfast", "dessert"]
+        #expect(try decode(data).mealTypes == [.breakfast, .dessert])
     }
 
     @Test func ignoresUnknownFields() throws {

@@ -55,12 +55,14 @@ RevoraTests/        Unit tests (Swift Testing)
 
 ```
 users/{uid}/recipes/{recipeId}
-  title, ingredients [{ name, quantity }], steps [String], photoID?,
-  isFavorite, createdAt, updatedAt, lastOpenedAt?
+  title, ingredients [{ name, quantity }], steps [String], mealTypes [String],
+  photoID?, isFavorite, createdAt, updatedAt, lastOpenedAt?
 
 users/{uid}/recipes/{recipeId}/photos/{photoID}       data: Bytes (JPEG, ≤ 500 KiB)
 users/{uid}/recipes/{recipeId}/thumbnails/{photoID}   data: Bytes (JPEG, ≤ 100 KiB)
 ```
+
+`mealTypes` holds `MealType` raw values (breakfast, lunch, dinner, snack, dessert, drink) in that order. It's missing on older recipes, and unknown values are skipped when decoding.
 
 Cover photos live in Firestore, not Cloud Storage, so the project stays on the free plan. All photo access goes through `RecipePhotoStore`, so a later move to Cloud Storage only changes that one type. Photos are immutable: a new photo gets a new `photoID`, and the old documents are deleted.
 

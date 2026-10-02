@@ -23,6 +23,13 @@ struct GreetingTests {
         #expect(Greeting(hour: hour) == .lateNight)
     }
 
+    @Test func eachTimeOfDayLooksForItsMeal() {
+        #expect(Greeting.morning.mealType == .breakfast)
+        #expect(Greeting.afternoon.mealType == .lunch)
+        #expect(Greeting.evening.mealType == .dinner)
+        #expect(Greeting.lateNight.mealType == .snack)
+    }
+
     @Test func lateNightStillSaysGoodEvening() {
         #expect(String(localized: Greeting.lateNight.title) == String(localized: Greeting.evening.title))
         #expect(String(localized: Greeting.lateNight.prompt) != String(localized: Greeting.evening.prompt))

@@ -1,8 +1,8 @@
 # Revora
 
-A simple recipe app for iPhone and iPad. Sign up with email and password, save your own recipes (title, ingredients and steps), and mark your favorites.
+A simple recipe app for iPhone and iPad. Sign up with email and password, save your own recipes (title, ingredients, steps and meal types), and mark your favorites.
 
-> **Status:** early development. Accounts, recipes (create, edit, delete, cover photos), favorites, the recipe filters and search, and the Home screen (greeting, quick actions, continue cooking and favorites) are in place. The Account tab is next.
+> **Status:** early development. Accounts, recipes (create, edit, delete, cover photos), favorites, meal types, the recipe filters and search, and the Home screen (greeting, quick actions, continue cooking and favorites) are in place. The Account tab is next.
 
 ## Requirements
 

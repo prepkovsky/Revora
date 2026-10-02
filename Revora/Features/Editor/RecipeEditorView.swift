@@ -55,6 +55,28 @@ struct RecipeEditorView: View {
                 }
                 .listRowBackground(Color.surface)
 
+                Section {
+                    FlowLayout {
+                        ForEach(MealType.allCases) { mealType in
+                            MealTypeChip(
+                                mealType: mealType,
+                                isSelected: draft.mealTypes.contains(mealType),
+                                background: .appBackground
+                            ) {
+                                withAnimation(.snappy) {
+                                    draft.mealTypes.formSymmetricDifference([mealType])
+                                }
+                            }
+                        }
+                    }
+                    .padding(.vertical, 6)
+                } header: {
+                    Text("Meal")
+                } footer: {
+                    Text("Pick any that fit. Surprise Me on Home suggests recipes for the time of day.")
+                }
+                .listRowBackground(Color.surface)
+
                 Section("Ingredients") {
                     ForEach($draft.ingredients) { $row in
                         let layout = stacksIngredientFields ? AnyLayout(VStackLayout()) : AnyLayout(HStackLayout())
@@ -257,6 +279,7 @@ struct RecipeEditorView: View {
             title: draft.trimmedTitle,
             ingredients: draft.trimmedIngredients,
             steps: draft.trimmedSteps,
+            mealTypes: draft.mealTypes.inDisplayOrder(),
             photoID: savePhoto(recipeID: recipeID)
         )
     }

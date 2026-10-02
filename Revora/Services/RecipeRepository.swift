@@ -53,6 +53,7 @@ final class RecipeRepository {
         title: String,
         ingredients: [Ingredient],
         steps: [String],
+        mealTypes: [MealType] = [],
         photoID: String? = nil
     ) throws(RecipeError) -> Recipe {
         let now = Date.now
@@ -61,6 +62,7 @@ final class RecipeRepository {
             title: title,
             ingredients: ingredients,
             steps: steps,
+            mealTypes: mealTypes,
             photoID: photoID,
             createdAt: now,
             updatedAt: now

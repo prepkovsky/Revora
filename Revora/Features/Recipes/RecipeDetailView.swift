@@ -86,13 +86,31 @@ struct RecipeDetailView: View {
                 }
             }
 
-            Text(recipe.title)
-                .font(.display(.largeTitle))
-                .accessibilityAddTraits(.isHeader)
-                .onGeometryChange(for: Double.self) { $0.frame(in: .scrollView).maxY } action: { titleBottom = $0 }
-                // Row settings go last, so the List still sees them.
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
+            VStack(alignment: .leading, spacing: 10) {
+                Text(recipe.title)
+                    .font(.display(.largeTitle))
+                    .accessibilityAddTraits(.isHeader)
+                    .onGeometryChange(for: Double.self) { $0.frame(in: .scrollView).maxY } action: { titleBottom = $0 }
+
+                if !recipe.mealTypes.isEmpty {
+                    FlowLayout(spacing: 16) {
+                        ForEach(recipe.mealTypes) { mealType in
+                            // Not a Label: in a list it gets the row's icon column and loses its text.
+                            HStack(spacing: 6) {
+                                Image(systemName: mealType.systemImage)
+                                    .foregroundStyle(.secondaryAccent)
+                                Text(mealType.title)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            // Row settings go last, so the List still sees them.
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
 
             if !recipe.ingredients.isEmpty {
                 Section("Ingredients") {

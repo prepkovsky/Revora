@@ -12,9 +12,13 @@ enum AppTab: Hashable {
 final class AppNavigation {
     var selectedTab = AppTab.home
     var recipeFilter = RecipeFilter.all
+    /// Narrows the Recipes tab to one meal, on top of `recipeFilter`. `nil` shows every meal.
+    var mealType: MealType?
 
+    /// Clears the meal filter too, so people see everything the link promised.
     func showRecipes(_ filter: RecipeFilter) {
         recipeFilter = filter
+        mealType = nil
         selectedTab = .recipes
     }
 }

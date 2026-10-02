@@ -91,6 +91,7 @@ struct RecipeDraftTests {
         RecipeDraft(title: "Pancakes"),
         RecipeDraft(ingredients: [.init(quantity: "2", name: "")]),
         RecipeDraft(steps: [.init(text: "Whisk")]),
+        RecipeDraft(mealTypes: [.dinner]),
     ])
     func contentCountsAsChanges(_ draft: RecipeDraft) {
         #expect(draft.hasChanges(from: RecipeDraft()))
@@ -128,6 +129,7 @@ struct RecipeDraftTests {
         title: "Pancakes",
         ingredients: [Ingredient(name: "Flour", quantity: "200 g"), Ingredient(name: "Salt", quantity: "")],
         steps: ["Whisk everything together.", "Fry in a hot pan."],
+        mealTypes: [.breakfast],
         photoID: "photo-1",
         isFavorite: true,
         createdAt: Date(timeIntervalSince1970: 100),
@@ -141,6 +143,20 @@ struct RecipeDraftTests {
         #expect(draft.trimmedIngredients == savedRecipe.ingredients)
         #expect(draft.trimmedSteps == savedRecipe.steps)
         #expect(draft.photo == .saved(photoID: "photo-1", recipeID: "recipe-1"))
+        #expect(draft.mealTypes == [.breakfast])
+    }
+
+    @Test func unpickingAMealTypeCountsAsChange() {
+        let original = RecipeDraft(recipe: savedRecipe)
+        var draft = original
+        draft.mealTypes = []
+        #expect(draft.hasChanges(from: original))
+    }
+
+    @Test func savesMealTypesInDisplayOrder() {
+        var draft = RecipeDraft(recipe: savedRecipe)
+        draft.mealTypes = [.dessert, .snack, .breakfast]
+        #expect(draft.applied(to: savedRecipe, photoID: nil).mealTypes == [.breakfast, .snack, .dessert])
     }
 
     @Test func untouchedRecipeHasNoChanges() {

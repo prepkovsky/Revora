@@ -6,22 +6,23 @@ struct HomeSummaryTests {
     private static let day: TimeInterval = 24 * 60 * 60
     private let now = Date(timeIntervalSince1970: 100 * day)
 
-    private func recipe(_ title: String, isFavorite: Bool = false, openedDaysAgo: Double? = nil) -> Recipe {
+    private func recipe(
+        _ title: String,
+        mealTypes: [MealType] = [],
+        isFavorite: Bool = false,
+        openedDaysAgo: Double? = nil
+    ) -> Recipe {
         Recipe(
             id: title,
             title: title,
             ingredients: [],
             steps: [],
+            mealTypes: mealTypes,
             isFavorite: isFavorite,
             createdAt: now.addingTimeInterval(-60 * Self.day),
             updatedAt: now,
             lastOpenedAt: openedDaysAgo.map { now.addingTimeInterval(-$0 * Self.day) }
         )
-    }
-
-    /// Always picks the first candidate, so the surprise is predictable in tests.
-    private struct FirstPick: RandomNumberGenerator {
-        mutating func next() -> UInt64 { 0 }
     }
 
     @Test func continueShowsTheLastOpenedRecipeHoweverLongAgo() {
@@ -51,10 +52,46 @@ struct HomeSummaryTests {
     }
 
     @Test func surpriseSkipsTheContinueRecipe() {
-        var generator = FirstPick()
         let summary = HomeSummary(recipes: [recipe("Last opened", openedDaysAgo: 0), recipe("Other")])
         #expect(summary.canSurprise)
-        #expect(summary.surpriseRecipe(using: &generator)?.title == "Other")
+        #expect(summary.surprisePool(for: .dinner).recipes.map(\.title) == ["Other"])
+    }
+
+    @Test func surprisePrefersRecipesForTheMeal() {
+        let summary = HomeSummary(recipes: [
+            recipe("Pancakes", mealTypes: [.breakfast, .dessert]),
+            recipe("Soup", mealTypes: [.lunch, .dinner]),
+            recipe("Toast", mealTypes: [.breakfast]),
+        ])
+        let pool = summary.surprisePool(for: .breakfast)
+        #expect(pool.mealType == .breakfast)
+        #expect(Set(pool.recipes.map(\.title)) == ["Pancakes", "Toast"])
+    }
+
+    @Test func surpriseFallsBackToAnyRecipeWhenNoneFitTheMeal() {
+        let summary = HomeSummary(recipes: [recipe("Pancakes", mealTypes: [.breakfast]), recipe("Untagged")])
+        let pool = summary.surprisePool(for: .dinner)
+        #expect(pool.mealType == nil)
+        #expect(Set(pool.recipes.map(\.title)) == ["Pancakes", "Untagged"])
+    }
+
+    @Test func surpriseKeepsTheOnlyFittingRecipeEvenWhenItWasJustOpened() {
+        let summary = HomeSummary(recipes: [
+            recipe("Only dinner", mealTypes: [.dinner], openedDaysAgo: 0),
+            recipe("Untagged"),
+        ])
+        let pool = summary.surprisePool(for: .dinner)
+        #expect(pool.mealType == .dinner)
+        #expect(pool.recipes.map(\.title) == ["Only dinner"])
+    }
+
+    @Test func surpriseSkipsTheContinueRecipeAmongFittingOnes() {
+        let summary = HomeSummary(recipes: [
+            recipe("Last dinner", mealTypes: [.dinner], openedDaysAgo: 0),
+            recipe("Other dinner", mealTypes: [.dinner]),
+            recipe("Untagged"),
+        ])
+        #expect(summary.surprisePool(for: .dinner).recipes.map(\.title) == ["Other dinner"])
     }
 
     @Test func surpriseNeedsAtLeastTwoRecipes() {

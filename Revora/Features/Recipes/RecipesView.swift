@@ -48,7 +48,11 @@ struct RecipesView: View {
                 .buttonStyle(.primary)
             }
         } else {
-            recipeList(navigation.recipeFilter.apply(to: recipeRepository.recipes, searchText: searchText))
+            recipeList(navigation.recipeFilter.apply(
+                to: recipeRepository.recipes,
+                mealType: navigation.mealType,
+                searchText: searchText
+            ))
         }
     }
 
@@ -65,6 +69,12 @@ struct RecipesView: View {
             .pickerStyle(.segmented)
             .listRowInsets(EdgeInsets())
             .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+
+            mealChips
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
 
             Section {
                 ForEach(recipes) { recipe in
@@ -115,10 +125,46 @@ struct RecipesView: View {
         .searchable(text: $searchText, prompt: "Search Recipes")
     }
 
+    /// One meal at a time. Tapping the picked one again shows every meal.
+    private var mealChips: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                ForEach(MealType.allCases) { mealType in
+                    MealTypeChip(mealType: mealType, isSelected: navigation.mealType == mealType) {
+                        withAnimation(.snappy) {
+                            navigation.mealType = navigation.mealType == mealType ? nil : mealType
+                        }
+                    }
+                }
+            }
+        }
+        .scrollIndicators(.hidden)
+        // Chips scroll out to the screen's edges instead of being cut off at the row's.
+        .scrollClipDisabled()
+    }
+
     /// All is only empty when there are no recipes at all, which has its own screen.
     @ViewBuilder private var emptyResult: some View {
         if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             ContentUnavailableView.search(text: searchText)
+        } else if let mealType = navigation.mealType {
+            let meal = String(localized: mealType.title)
+            ContentUnavailableView {
+                Label(displayTitle: "No \(meal) Recipes", systemImage: mealType.systemImage)
+            } description: {
+                switch navigation.recipeFilter {
+                case .recent: Text("You haven't opened a \(meal) recipe in the last \(RecipeFilter.recentDays) days.")
+                case .all: Text("Mark recipes as \(meal) when you edit them to see them here.")
+                case .favorites: Text("None of your favorites are marked \(meal).")
+                }
+            } actions: {
+                Button("Show All Meals") {
+                    withAnimation(.snappy) {
+                        navigation.mealType = nil
+                    }
+                }
+                .buttonStyle(.primary)
+            }
         } else {
             switch navigation.recipeFilter {
             case .recent:

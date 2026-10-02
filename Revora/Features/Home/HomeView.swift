@@ -87,7 +87,7 @@ struct HomeView: View {
             welcome
         } else {
             let summary = HomeSummary(recipes: recipeRepository.recipes)
-            actions(summary)
+            actions(summary, mealType: Greeting(date: now).mealType)
             if let recipe = summary.continueRecipe {
                 section("Continue Cooking") {
                     NavigationLink(value: recipe) {
@@ -100,7 +100,8 @@ struct HomeView: View {
         }
     }
 
-    private func actions(_ summary: HomeSummary) -> some View {
+    private func actions(_ summary: HomeSummary, mealType: MealType) -> some View {
+        let pool = summary.surprisePool(for: mealType)
         // Side by side, each tile is too narrow for accessibility text sizes.
         let layout = dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(spacing: 12))
@@ -120,12 +121,11 @@ struct HomeView: View {
 
             if summary.canSurprise {
                 Button {
-                    var generator = SystemRandomNumberGenerator()
-                    surpriseRecipe = summary.surpriseRecipe(using: &generator)
+                    surpriseRecipe = pool.recipes.randomElement()
                 } label: {
                     HomeActionTile(
                         title: "Surprise Me",
-                        subtitle: "Pick one of your \(summary.recipeCount) recipes",
+                        subtitle: surpriseSubtitle(pool, recipeCount: summary.recipeCount),
                         systemImage: "dice"
                     )
                 }
@@ -135,6 +135,18 @@ struct HomeView: View {
         .buttonStyle(.card)
         // Both tiles as tall as the taller one.
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func surpriseSubtitle(_ pool: HomeSummary.SurprisePool, recipeCount: Int) -> LocalizedStringResource {
+        switch pool.mealType {
+        case .breakfast: "Pick something for breakfast"
+        case .lunch: "Pick something for lunch"
+        case .dinner: "Pick something for dinner"
+        case .snack: "Pick a snack"
+        case .dessert: "Pick a dessert"
+        case .drink: "Pick a drink"
+        case nil: "Pick one of your \(recipeCount) recipes"
+        }
     }
 
     @ViewBuilder private func favorites(_ recipes: [Recipe]) -> some View {

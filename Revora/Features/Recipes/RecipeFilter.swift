@@ -19,11 +19,14 @@ enum RecipeFilter: CaseIterable, Identifiable {
     /// How long a recipe stays in Recent after it was last opened. Creating or editing doesn't count.
     static let recentDays = 3
 
-    /// The recipes this segment shows, narrowed to titles that contain the search text.
-    /// Matching ignores case and accents, so "creme" finds "Crème Brûlée".
-    func apply(to recipes: [Recipe], searchText: String, now: Date = .now) -> [Recipe] {
+    /// The recipes this segment shows, narrowed to a meal type and to titles that contain the
+    /// search text. Matching ignores case and accents, so "creme" finds "Crème Brûlée".
+    func apply(to recipes: [Recipe], mealType: MealType? = nil, searchText: String, now: Date = .now) -> [Recipe] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let matches = query.isEmpty ? recipes : recipes.filter { $0.title.localizedStandardContains(query) }
+        let matches = recipes.filter { recipe in
+            (mealType.map(recipe.mealTypes.contains) ?? true)
+                && (query.isEmpty || recipe.title.localizedStandardContains(query))
+        }
         return switch self {
         case .recent: matches.filter { ($0.lastOpenedAt ?? .distantPast) >= Self.recentCutoff(now: now) }.sortedByRecent()
         case .all: matches.sortedByTitle()

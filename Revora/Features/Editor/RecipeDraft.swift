@@ -52,6 +52,7 @@ struct RecipeDraft: Equatable {
     var ingredients: [IngredientRow] = []
     var steps: [StepRow] = []
     var photo: Photo?
+    var mealTypes: Set<MealType> = []
 
     var trimmedTitle: String {
         trimmed(title)
@@ -78,6 +79,7 @@ struct RecipeDraft: Equatable {
             || trimmedIngredients != original.trimmedIngredients
             || trimmedSteps != original.trimmedSteps
             || photo != original.photo
+            || mealTypes != original.mealTypes
     }
 }
 
@@ -88,6 +90,7 @@ extension RecipeDraft {
         ingredients = recipe.ingredients.map { IngredientRow(quantity: $0.quantity, name: $0.name) }
         steps = recipe.steps.map { StepRow(text: $0) }
         photo = recipe.photoID.map { .saved(photoID: $0, recipeID: recipe.id) }
+        mealTypes = Set(recipe.mealTypes)
     }
 
     /// The recipe with this draft's edits. Fields the editor doesn't show, like favorites, stay as they are.
@@ -96,6 +99,7 @@ extension RecipeDraft {
         recipe.title = trimmedTitle
         recipe.ingredients = trimmedIngredients
         recipe.steps = trimmedSteps
+        recipe.mealTypes = mealTypes.inDisplayOrder()
         recipe.photoID = photoID
         return recipe
     }
