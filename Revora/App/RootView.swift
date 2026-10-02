@@ -4,6 +4,11 @@ struct RootView: View {
     @Environment(AuthService.self) private var authService
     @Environment(RecipeRepository.self) private var recipeRepository
 
+    init() {
+        // Not in the app's init: touching UIKit's appearance that early loses the app's accent color.
+        DisplayFont.applyToNavigationBars()
+    }
+
     var body: some View {
         Group {
             switch authService.state {

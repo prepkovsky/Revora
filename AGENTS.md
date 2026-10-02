@@ -36,6 +36,7 @@ Revora/
 ├── Models/         Recipe, Ingredient
 ├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
 ├── Components/     Shared reusable views
+├── Resources/      Fonts (Fraunces Soft, registered in Info.plist's UIAppFonts) and their licence
 └── Assets.xcassets
 RevoraTests/        Unit tests (Swift Testing)
 ```

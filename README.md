@@ -45,10 +45,13 @@ Revora/
 ├── Services/       Firebase wrappers (auth, recipe storage)
 ├── Models/         Recipe data types
 ├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
-└── Components/     Shared reusable views
+├── Components/     Shared reusable views
+└── Resources/      Fonts
 RevoraTests/        Unit tests
 ```
 
 Some folders appear only once their first files are added.
 
 Built with SwiftUI in Swift 6 language mode. Recipes and their cover photos are stored in Firestore under `users/{uid}/recipes`, so the project runs on Firebase's free plan. The security rules in `firestore.rules` let users read and write only their own data; publish them in the Firebase console after changing them.
+
+Titles use [Fraunces](https://github.com/undercasetype/Fraunces) by Undercase Type, with its soft serifs and weight built in, under the SIL Open Font License (`Revora/Resources/Fonts/Fraunces-OFL.txt`).

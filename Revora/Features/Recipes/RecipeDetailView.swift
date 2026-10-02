@@ -41,11 +41,11 @@ struct RecipeDetailView: View {
             if let recipe {
                 content(for: recipe)
             } else {
-                ContentUnavailableView(
-                    "Recipe Not Found",
-                    systemImage: "fork.knife",
-                    description: Text("It may have been deleted.")
-                )
+                ContentUnavailableView {
+                    Label(displayTitle: "Recipe Not Found", systemImage: "fork.knife")
+                } description: {
+                    Text("It may have been deleted.")
+                }
             }
         }
         .background(.appBackground)
@@ -87,7 +87,7 @@ struct RecipeDetailView: View {
             }
 
             Text(recipe.title)
-                .font(.largeTitle.bold())
+                .font(.display(.largeTitle))
                 .accessibilityAddTraits(.isHeader)
                 .onGeometryChange(for: Double.self) { $0.frame(in: .scrollView).maxY } action: { titleBottom = $0 }
                 // Row settings go last, so the List still sees them.
@@ -183,7 +183,7 @@ struct RecipeDetailView: View {
             }
             ToolbarItem(placement: .principal) {
                 Text(recipe.title)
-                    .font(.headline)
+                    .font(.display(.headline))
                     .lineLimit(1)
                     .opacity(isTitleInToolbar ? 1 : 0)
                     .animation(.easeOut(duration: 0.15), value: isTitleInToolbar)

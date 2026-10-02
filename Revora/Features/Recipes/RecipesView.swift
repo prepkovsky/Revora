@@ -38,7 +38,7 @@ struct RecipesView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if recipeRepository.recipes.isEmpty {
             ContentUnavailableView {
-                Label("No Recipes Yet", systemImage: "book")
+                Label(displayTitle: "No Recipes Yet", systemImage: "book")
             } description: {
                 Text("Recipes you create will show up here.")
             } actions: {
@@ -122,13 +122,13 @@ struct RecipesView: View {
             switch filter {
             case .recent:
                 ContentUnavailableView {
-                    Label("No Recent Recipes", systemImage: "clock")
+                    Label(displayTitle: "No Recent Recipes", systemImage: "clock")
                 } description: {
                     Text("Recipes you open stay here for \(RecipeFilter.recentDays) days.")
                 }
             case .favorites:
                 ContentUnavailableView {
-                    Label("No Favorites Yet", systemImage: "heart")
+                    Label(displayTitle: "No Favorites Yet", systemImage: "heart")
                 } description: {
                     Text("Tap the heart on a recipe to see it here.")
                 }

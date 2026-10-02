@@ -101,7 +101,7 @@ struct ResetPasswordView: View {
                 .accessibilityHidden(true)
 
             Text("Check Your Email")
-                .font(.title2.bold())
+                .font(.display(.title2))
 
             Text("If there's an account for \(email), you'll get a link to reset your password. It can take a few minutes, so check your spam folder too.")
                 .multilineTextAlignment(.center)

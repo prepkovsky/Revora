@@ -4,6 +4,11 @@
 <dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Revora uses the camera to take a cover photo for your recipe.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>FrauncesSoft-SemiBold.ttf</string>
+		<string>FrauncesSoft-Italic.ttf</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

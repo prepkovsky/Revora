@@ -7,7 +7,7 @@ struct AccountView: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label("Account", systemImage: "person.crop.circle")
+            Label(displayTitle: "Account", systemImage: "person.crop.circle")
         } actions: {
             Button("Log Out", role: .destructive, action: logOut)
         }
