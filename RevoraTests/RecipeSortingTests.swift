@@ -43,25 +43,27 @@ struct RecipeSortingTests {
         #expect(recipes.sortedByTitle().map(\.id) == ["older", "newer"])
     }
 
-    @Test func recentPutsLatestUseFirst() {
+    @Test func recentPutsLatestOpenedFirst() {
         let recipes = [
-            recipe("Apple Pie", created: 100, opened: 400),
-            recipe("Banana Bread", created: 50, updated: 300),
-            recipe("Pancakes", created: 200),
+            recipe("Apple Pie", created: 100, opened: 300),
+            recipe("Banana Bread", created: 50, updated: 900, opened: 200),
+            recipe("Pancakes", created: 200, opened: 400),
         ]
-        #expect(recipes.sortedByRecent().map(\.title) == ["Apple Pie", "Banana Bread", "Pancakes"])
+        #expect(recipes.sortedByRecent().map(\.title) == ["Pancakes", "Apple Pie", "Banana Bread"])
     }
 
-    @Test func lastUsedIsTheLaterOfOpenedAndUpdated() {
-        #expect(recipe("Opened later", updated: 100, opened: 200).lastUsedAt == Date(timeIntervalSince1970: 200))
-        #expect(recipe("Edited later", updated: 300, opened: 200).lastUsedAt == Date(timeIntervalSince1970: 300))
-        #expect(recipe("Never opened", updated: 100).lastUsedAt == Date(timeIntervalSince1970: 100))
+    @Test func recentPutsNeverOpenedLast() {
+        let recipes = [
+            recipe("Never opened", created: 900, updated: 900),
+            recipe("Opened", created: 100, opened: 200),
+        ]
+        #expect(recipes.sortedByRecent().map(\.title) == ["Opened", "Never opened"])
     }
 
     @Test func recentTiesGoToTheNewerRecipe() {
         let recipes = [
-            recipe("Older", created: 100, updated: 500),
-            recipe("Newer", created: 200, updated: 500),
+            recipe("Older", created: 100, opened: 500),
+            recipe("Newer", created: 200, opened: 500),
         ]
         #expect(recipes.sortedByRecent().map(\.title) == ["Newer", "Older"])
     }

@@ -41,8 +41,13 @@ struct RecipeFilterTests {
         filter.apply(to: recipes, searchText: search, now: now).map(\.title)
     }
 
-    @Test func recentShowsRecipesUsedInTheLastThreeDaysNewestFirst() {
-        #expect(titles(.recent) == ["Apple Pancakes", "Crème Brûlée", "Pancakes"])
+    @Test func recentShowsRecipesOpenedInTheLastThreeDaysNewestFirst() {
+        #expect(titles(.recent) == ["Apple Pancakes", "Pancakes"])
+    }
+
+    @Test func recentIgnoresCreatingAndEditing() {
+        let recipes = [recipe("Just edited", updatedDaysAgo: 0), recipe("Opened long ago", updatedDaysAgo: 0, openedDaysAgo: 10)]
+        #expect(RecipeFilter.recent.apply(to: recipes, searchText: "", now: now).isEmpty)
     }
 
     @Test func recentKeepsARecipeUntilExactlyThreeDaysHavePassed() {

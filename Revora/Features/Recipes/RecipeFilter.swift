@@ -16,7 +16,7 @@ enum RecipeFilter: CaseIterable, Identifiable {
         }
     }
 
-    /// How long a recipe stays in Recent after it was last opened, created or edited.
+    /// How long a recipe stays in Recent after it was last opened. Creating or editing doesn't count.
     static let recentDays = 3
 
     /// The recipes this segment shows, narrowed to titles that contain the search text.
@@ -25,7 +25,7 @@ enum RecipeFilter: CaseIterable, Identifiable {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         let matches = query.isEmpty ? recipes : recipes.filter { $0.title.localizedStandardContains(query) }
         return switch self {
-        case .recent: matches.filter { $0.lastUsedAt >= Self.recentCutoff(now: now) }.sortedByRecent()
+        case .recent: matches.filter { ($0.lastOpenedAt ?? .distantPast) >= Self.recentCutoff(now: now) }.sortedByRecent()
         case .all: matches.sortedByTitle()
         case .favorites: matches.filter(\.isFavorite).sortedByTitle()
         }
