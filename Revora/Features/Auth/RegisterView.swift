@@ -22,6 +22,21 @@ struct RegisterView: View {
                     .foregroundStyle(.secondary)
 
                 FormField(
+                    label: "Name",
+                    hint: "Optional. Home greets you with your first name.",
+                    error: error(for: .name),
+                    focus: $focusedField,
+                    field: .name
+                ) {
+                    TextField("Name", text: $form.name, prompt: Text("Your name"))
+                        .textContentType(.name)
+                        .textInputAutocapitalization(.words)
+                        .autocorrectionDisabled()
+                        .submitLabel(.next)
+                        .onSubmit { focusedField = .email }
+                }
+
+                FormField(
                     label: "Email",
                     error: error(for: .email),
                     errorAction: submitError == .emailAlreadyInUse ? logInInstead : nil,
@@ -119,6 +134,7 @@ struct RegisterView: View {
 
     private func isEmpty(_ field: Field) -> Bool {
         switch field {
+        case .name: form.name.isEmpty
         case .email: form.email.isEmpty
         case .password: form.password.isEmpty
         case .confirmPassword: form.confirmPassword.isEmpty
@@ -137,7 +153,7 @@ struct RegisterView: View {
         Task {
             defer { isSubmitting = false }
             do throws(AuthError) {
-                try await authService.register(email: form.trimmedEmail, password: form.password)
+                try await authService.register(name: form.trimmedName, email: form.trimmedEmail, password: form.password)
             } catch {
                 submitError = error
             }

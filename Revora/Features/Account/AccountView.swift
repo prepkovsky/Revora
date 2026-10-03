@@ -6,6 +6,10 @@ struct AccountView: View {
     @AppStorage(Appearance.storageKey) private var appearance = Appearance.system
     @State private var logOutError: AuthError?
 
+    private var user: AuthUser? {
+        authService.currentUser
+    }
+
     private var version: String {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
@@ -16,11 +20,21 @@ struct AccountView: View {
     var body: some View {
         List {
             Section {
-                AccountHeader(email: authService.currentUser?.email)
+                AccountHeader(name: user?.name, email: user?.email)
             }
             .listRowBackground(Color.surface)
 
             Section {
+                NavigationLink {
+                    ChangeNameView(currentName: user?.name)
+                } label: {
+                    Label(user?.name == nil ? "Add Your Name" : "Change Name", systemImage: "person")
+                }
+                NavigationLink {
+                    ChangeEmailView(currentEmail: user?.email)
+                } label: {
+                    Label("Change Email", systemImage: "envelope")
+                }
                 NavigationLink {
                     ChangePasswordView()
                 } label: {
@@ -89,6 +103,10 @@ struct AccountView: View {
         .scrollContentBackground(.hidden)
         .background(.appBackground)
         .navigationTitle("Account")
+        // Shows changes made elsewhere, like an email confirmed on another device.
+        .task {
+            await authService.refreshUser()
+        }
         .alert(
             "Couldn't Log Out",
             isPresented: Binding { logOutError != nil } set: { if !$0 { logOutError = nil } },
@@ -111,13 +129,14 @@ struct AccountView: View {
 }
 
 private struct AccountHeader: View {
+    let name: String?
     let email: String?
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .title) private var avatarSize = 56.0
 
     private var initial: String {
-        email?.first.map { String($0).uppercased() } ?? "?"
+        (name ?? email)?.first.map { String($0).uppercased() } ?? "?"
     }
 
     var body: some View {
@@ -135,12 +154,21 @@ private struct AccountHeader: View {
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Signed in as")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Text(email ?? "No email address")
-                    .font(.headline)
-                    .textSelection(.enabled)
+                if let name {
+                    Text(name)
+                        .font(.display(.title3))
+                    Text(email ?? "No email address")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                } else {
+                    Text("Signed in as")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Text(email ?? "No email address")
+                        .font(.headline)
+                        .textSelection(.enabled)
+                }
             }
         }
         .padding(.vertical, 6)

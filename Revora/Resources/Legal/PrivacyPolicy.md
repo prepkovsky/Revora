@@ -4,7 +4,7 @@ Revora is a place to keep your own recipes. This policy explains what the app st
 
 ## What Revora stores
 
-- **Your account:** your email address and password. The password is handled by Firebase Authentication, which stores it in a form that can't be read back, so nobody can see it.
+- **Your account:** your email address, your name if you add one, and your password. The password is handled by Firebase Authentication, which stores it in a form that can't be read back, so nobody can see it.
 - **Your recipes:** titles, ingredients, steps, meal types, which recipes are favorites, and when you created, edited and last opened each one.
 - **Cover photos** you add to recipes. They're made smaller on your device first, and their metadata, such as where a photo was taken, is removed before upload.
 - **Technical information** that Firebase needs to run the service and keep it secure, such as your IP address and the app version.
@@ -17,7 +17,7 @@ Revora is a place to keep your own recipes. This policy explains what the app st
 
 ## How your data is used
 
-Only to run the app: to sign you in, to save your recipes and photos and sync them to your devices, and to send the password reset emails you ask for.
+Only to run the app: to sign you in, to save your recipes and photos and sync them to your devices, and to send the emails you ask for, like password resets and confirming a new email address.
 
 ## Where it's stored
 

@@ -94,30 +94,14 @@ struct ResetPasswordView: View {
     }
 
     private func confirmation(for email: String) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: "envelope.badge")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondaryAccent)
-                .accessibilityHidden(true)
-
-            Text("Check Your Email")
-                .font(.display(.title2))
-
-            Text("If there's an account for \(email), you'll get a link to reset your password. It can take a few minutes, so check your spam folder too.")
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-
-            Button {
-                dismiss()
-            } label: {
-                Text("Back to Log In")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.primary)
-            .padding(.top, 8)
+        ConfirmationMessage(
+            systemImage: "envelope.badge",
+            title: "Check Your Email",
+            message: Text("If there's an account for \(email), you'll get a link to reset your password. It can take a few minutes, so check your spam folder too."),
+            buttonTitle: "Back to Log In"
+        ) {
+            dismiss()
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 24)
     }
 
     private func submit() {

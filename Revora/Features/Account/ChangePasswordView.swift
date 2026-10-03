@@ -98,30 +98,14 @@ struct ChangePasswordView: View {
     }
 
     private var confirmation: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "checkmark.shield")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondaryAccent)
-                .accessibilityHidden(true)
-
-            Text("Password Changed")
-                .font(.display(.title2))
-
-            Text("Use your new password the next time you log in.")
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-
-            Button {
-                dismiss()
-            } label: {
-                Text("Done")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.primary)
-            .padding(.top, 8)
+        ConfirmationMessage(
+            systemImage: "checkmark.shield",
+            title: "Password Changed",
+            message: Text("Use your new password the next time you log in."),
+            buttonTitle: "Done"
+        ) {
+            dismiss()
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 24)
     }
 
     private func error(for field: Field) -> String? {

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
+    @Environment(AuthService.self) private var authService
     @Environment(RecipeRepository.self) private var recipeRepository
     @Environment(AppNavigation.self) private var navigation
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -39,7 +40,7 @@ struct HomeView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text(greeting.title)
+                    Text(greeting.title(firstName: authService.currentUser?.firstName))
                         .font(.display(.headline))
                         .opacity(isGreetingInToolbar ? 1 : 0)
                         .animation(.easeOut(duration: 0.15), value: isGreetingInToolbar)
@@ -67,7 +68,7 @@ struct HomeView: View {
                 .foregroundStyle(.secondary)
                 .padding(.bottom, 4)
 
-            Text(greeting.title)
+            Text(greeting.title(firstName: authService.currentUser?.firstName))
                 .font(.display(size: 40, relativeTo: .largeTitle))
                 .accessibilityAddTraits(.isHeader)
                 .onGeometryChange(for: Double.self) { $0.frame(in: .scrollView).maxY } action: { greetingBottom = $0 }
@@ -236,6 +237,7 @@ struct HomeView: View {
     NavigationStack {
         HomeView()
     }
+    .environment(AuthService())
     .environment(RecipeRepository())
     .environment(RecipePhotoStore())
     .environment(AppNavigation())

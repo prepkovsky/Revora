@@ -1,11 +1,16 @@
 struct RegisterForm: Equatable {
     enum Field: CaseIterable {
-        case email, password, confirmPassword
+        case name, email, password, confirmPassword
     }
 
+    var name = ""
     var email = ""
     var password = ""
     var confirmPassword = ""
+
+    var trimmedName: String {
+        PersonName.trimmed(name)
+    }
 
     var trimmedEmail: String {
         EmailAddress.trimmed(email)
@@ -18,6 +23,8 @@ struct RegisterForm: Equatable {
     /// What the field still needs, or `nil` when it's valid.
     func issue(for field: Field) -> String? {
         switch field {
+        case .name:
+            PersonName.issue(for: trimmedName)
         case .email:
             EmailAddress.issue(for: trimmedEmail)
         case .password:

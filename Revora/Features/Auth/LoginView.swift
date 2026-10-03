@@ -15,8 +15,13 @@ struct LoginView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                Text("Welcome back. Log in to get to your recipes.")
-                    .foregroundStyle(.secondary)
+                if let changedEmail = authService.changedEmail {
+                    Label("Your email is now \(changedEmail). Log in with it to get back to your recipes.", systemImage: "checkmark.circle")
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Welcome back. Log in to get to your recipes.")
+                        .foregroundStyle(.secondary)
+                }
 
                 FormField(label: "Email", error: error(for: .email), focus: $focusedField, field: .email) {
                     TextField("Email", text: $form.email, prompt: Text("name@example.com"))
@@ -82,6 +87,11 @@ struct LoginView: View {
         .background(.appBackground)
         .onTapGesture { focusedField = nil }
         .navigationTitle("Log In")
+        .onAppear {
+            if let changedEmail = authService.changedEmail, form.email.isEmpty {
+                form.email = changedEmail
+            }
+        }
         .navigationDestination(isPresented: $isResettingPassword) {
             ResetPasswordView(email: form.trimmedEmail)
         }

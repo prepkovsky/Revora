@@ -29,6 +29,16 @@ enum Greeting: Equatable {
         }
     }
 
+    /// With the first name when there is one, like "Good evening, Sam".
+    func title(firstName: String?) -> LocalizedStringResource {
+        guard let firstName else { return title }
+        switch self {
+        case .morning: return "Good morning, \(firstName)"
+        case .afternoon: return "Good afternoon, \(firstName)"
+        case .evening, .lateNight: return "Good evening, \(firstName)"
+        }
+    }
+
     /// The meal people are most likely planning, which Surprise Me looks for first.
     var mealType: MealType {
         switch self {
