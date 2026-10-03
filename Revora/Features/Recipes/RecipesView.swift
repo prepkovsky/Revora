@@ -38,7 +38,7 @@ struct RecipesView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if recipeRepository.recipes.isEmpty {
             ContentUnavailableView {
-                Label(displayTitle: "No Recipes Yet", systemImage: "book")
+                Label(displayTitle: "No Recipes Yet", systemImage: "fork.knife")
             } description: {
                 Text("Recipes you create will show up here.")
             } actions: {

@@ -11,7 +11,7 @@ struct MainTabView: View {
                 }
             }
 
-            Tab("Recipes", systemImage: "book", value: .recipes) {
+            Tab("Recipes", systemImage: "fork.knife", value: .recipes) {
                 NavigationStack {
                     RecipesView()
                 }
