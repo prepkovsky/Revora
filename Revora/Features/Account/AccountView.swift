@@ -21,6 +21,15 @@ struct AccountView: View {
             .listRowBackground(Color.surface)
 
             Section {
+                NavigationLink {
+                    ChangePasswordView()
+                } label: {
+                    Label("Change Password", systemImage: "key")
+                }
+            }
+            .listRowBackground(Color.surface)
+
+            Section {
                 Picker("Appearance", systemImage: "circle.lefthalf.filled", selection: $appearance) {
                     ForEach(Appearance.allCases) { appearance in
                         Text(appearance.title)

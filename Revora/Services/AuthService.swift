@@ -81,6 +81,20 @@ final class AuthService {
         }
     }
 
+    /// Firebase only changes the password after a recent sign-in, so the current one is
+    /// checked first. The account stays signed in on this device afterwards.
+    func changePassword(from currentPassword: String, to newPassword: String) async throws(AuthError) {
+        try await reauthenticate(password: currentPassword)
+        guard let user = Auth.auth().currentUser else { throw .unknown }
+        do {
+            try await user.updatePassword(to: newPassword)
+            Self.logger.info("Password changed")
+        } catch {
+            Self.logger.error("Changing the password failed: \(error)")
+            throw AuthError(error)
+        }
+    }
+
     /// Deleting the account also signs out, so `state` follows through the listener.
     func deleteAccount() async throws(AuthError) {
         guard let user = Auth.auth().currentUser else { throw .unknown }
