@@ -4,6 +4,8 @@ struct RootView: View {
     @Environment(AuthService.self) private var authService
     @Environment(RecipeRepository.self) private var recipeRepository
 
+    @AppStorage(Appearance.storageKey) private var appearance = Appearance.system
+
     init() {
         // Not in the app's init: touching UIKit's appearance that early loses the app's accent color.
         DisplayFont.applyToNavigationBars()
@@ -32,6 +34,8 @@ struct RootView: View {
                     }
             }
         }
+        // Set once here so every screen follows it, including sheets and the auth flow.
+        .preferredColorScheme(appearance.colorScheme)
         .task {
             await authService.observeAuthState()
         }

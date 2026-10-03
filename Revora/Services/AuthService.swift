@@ -22,6 +22,11 @@ final class AuthService {
 
     private(set) var state: State = .loading
 
+    var currentUser: AuthUser? {
+        guard case .signedIn(let user) = state else { return nil }
+        return user
+    }
+
     /// Runs for as long as the calling task lives. The first value is the
     /// session Firebase restored from the keychain, which ends `.loading`.
     func observeAuthState() async {
@@ -60,6 +65,30 @@ final class AuthService {
             Self.logger.info("Password reset skipped: no account for that email")
         } catch {
             Self.logger.error("Password reset failed: \(error)")
+            throw AuthError(error)
+        }
+    }
+
+    /// Firebase only deletes an account that signed in recently, so asking for the
+    /// password again both confirms it's really them and makes the deletion allowed.
+    func reauthenticate(password: String) async throws(AuthError) {
+        guard let user = Auth.auth().currentUser, let email = user.email else { throw .unknown }
+        do {
+            _ = try await user.reauthenticate(with: EmailAuthProvider.credential(withEmail: email, password: password))
+        } catch {
+            Self.logger.error("Re-authentication failed: \(error)")
+            throw AuthError(reauthenticating: error)
+        }
+    }
+
+    /// Deleting the account also signs out, so `state` follows through the listener.
+    func deleteAccount() async throws(AuthError) {
+        guard let user = Auth.auth().currentUser else { throw .unknown }
+        do {
+            try await user.delete()
+            Self.logger.info("Account deleted")
+        } catch {
+            Self.logger.error("Deleting the account failed: \(error)")
             throw AuthError(error)
         }
     }

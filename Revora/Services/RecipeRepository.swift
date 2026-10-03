@@ -108,6 +108,31 @@ final class RecipeRepository {
         }
     }
 
+    /// Every recipe and photo, for deleting the account. Like `deleteAllPhotos`, it waits for
+    /// the server. Reading from the server first also fails straight away when offline,
+    /// before anything is deleted. Photos go first, so no recipe outlives its photo.
+    func deleteAllRecipes(photoStore: RecipePhotoStore) async throws(RecipeError) {
+        let collection = try recipesCollection()
+        do {
+            let documents = try await collection.getDocuments(source: .server).documents
+            for document in documents {
+                try await photoStore.deleteAllPhotos(recipeID: document.documentID)
+            }
+            // A batch holds at most 500 writes.
+            for start in stride(from: 0, to: documents.count, by: 500) {
+                let batch = Firestore.firestore().batch()
+                for document in documents[start..<min(start + 500, documents.count)] {
+                    batch.deleteDocument(document.reference)
+                }
+                try await batch.commit()
+            }
+        } catch {
+            Self.logger.error("Deleting all recipes failed: \(error)")
+            throw RecipeError(error)
+        }
+        photoStore.removeAllCachedImages()
+    }
+
     private func write(_ recipe: Recipe, to document: DocumentReference) throws(RecipeError) {
         do {
             try document.setData(from: recipe, completion: Self.logFailure("Save"))

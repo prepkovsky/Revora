@@ -23,6 +23,16 @@ struct AuthErrorTests {
         #expect(AuthError(firebaseError(code)) == expected)
     }
 
+    @Test(arguments: [AuthErrorCode.invalidCredential, .wrongPassword])
+    func reauthenticatingBlamesOnlyThePassword(code: AuthErrorCode) {
+        #expect(AuthError(reauthenticating: firebaseError(code)) == .wrongPassword)
+    }
+
+    @Test func reauthenticatingKeepsOtherErrors() {
+        #expect(AuthError(reauthenticating: firebaseError(.tooManyRequests)) == .tooManyRequests)
+        #expect(AuthError(reauthenticating: firebaseError(.networkError)) == .network)
+    }
+
     @Test func treatsOtherDomainsAsUnknown() {
         let error = NSError(domain: NSURLErrorDomain, code: AuthErrorCode.emailAlreadyInUse.rawValue)
         #expect(AuthError(error) == .unknown)

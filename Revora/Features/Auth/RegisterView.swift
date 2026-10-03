@@ -106,7 +106,7 @@ struct RegisterView: View {
         switch error {
         case .emailAlreadyInUse, .invalidEmail: .email
         case .weakPassword: .password
-        case .wrongCredentials, .network, .tooManyRequests, .unknown: nil
+        case .wrongCredentials, .wrongPassword, .network, .tooManyRequests, .unknown: nil
         }
     }
 

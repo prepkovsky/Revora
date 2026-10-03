@@ -7,6 +7,8 @@ enum AuthError: Error, Equatable {
     case invalidEmail
     case weakPassword
     case wrongCredentials
+    /// Re-entering the password of the signed-in account, where only the password can be wrong.
+    case wrongPassword
     case network
     case tooManyRequests
     case unknown
@@ -30,6 +32,11 @@ enum AuthError: Error, Equatable {
         }
     }
 
+    init(reauthenticating error: any Error) {
+        let error = AuthError(error)
+        self = error == .wrongCredentials ? .wrongPassword : error
+    }
+
     var message: String {
         switch self {
         case .emailAlreadyInUse:
@@ -41,6 +48,8 @@ enum AuthError: Error, Equatable {
         case .wrongCredentials:
             // Doesn't say which one is wrong, so it doesn't reveal whether an account exists.
             "That email and password don't match. Try again or reset your password."
+        case .wrongPassword:
+            "That password isn't right. Try again."
         case .network:
             "You're offline. Check your connection and try again."
         case .tooManyRequests:
