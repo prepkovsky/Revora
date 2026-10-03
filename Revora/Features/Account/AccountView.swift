@@ -24,7 +24,7 @@ struct AccountView: View {
             }
             .listRowBackground(Color.surface)
 
-            Section {
+            Section("Profile") {
                 NavigationLink {
                     ChangeNameView(currentName: user?.name)
                 } label: {
@@ -43,8 +43,8 @@ struct AccountView: View {
             }
             .listRowBackground(Color.surface)
 
-            Section {
-                Picker("Appearance", systemImage: "circle.lefthalf.filled", selection: $appearance) {
+            Section("Appearance") {
+                Picker("Theme", systemImage: "circle.lefthalf.filled", selection: $appearance) {
                     ForEach(Appearance.allCases) { appearance in
                         Text(appearance.title)
                     }
@@ -94,6 +94,7 @@ struct AccountView: View {
                 .listRowSeparator(.hidden, edges: .top)
             } header: {
                 Text("Danger Zone")
+                    .foregroundStyle(.red)
             } footer: {
                 Text(verbatim: version)
                     .frame(maxWidth: .infinity)
