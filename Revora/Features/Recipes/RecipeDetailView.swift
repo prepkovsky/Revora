@@ -76,6 +76,48 @@ struct RecipeDetailView: View {
         }
     }
 
+    private func sectionHeading(_ text: Text) -> some View {
+        text
+            .font(.display(.title3))
+            .padding(.top, 4)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    private func ingredientRow(_ ingredient: Ingredient) -> some View {
+        let layout = stacksIngredients
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+        return layout {
+            if !(stacksIngredients && ingredient.quantity.isEmpty) {
+                Text(ingredient.quantity)
+                    .fontWeight(.semibold)
+                    .frame(width: stacksIngredients ? nil : quantityWidth, alignment: .leading)
+            }
+            Text(ingredient.name)
+        }
+    }
+
+    private func stepRow(_ step: Step, number: Int) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text("\(number).")
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 6) {
+                if !step.text.isEmpty {
+                    Text(step.text)
+                }
+                ForEach(step.bullets.indices, id: \.self) { index in
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text("•")
+                            .foregroundStyle(.secondary)
+                        Text(step.bullets[index])
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
     private func content(for recipe: Recipe) -> some View {
         List {
             if recipe.photoID != nil {
@@ -112,36 +154,34 @@ struct RecipeDetailView: View {
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
 
-            if !recipe.ingredients.isEmpty {
+            // One card per list, with each section's name as a heading row inside it.
+            if !recipe.ingredientSections.isEmpty {
                 Section("Ingredients") {
-                    ForEach(recipe.ingredients.indices, id: \.self) { index in
-                        let ingredient = recipe.ingredients[index]
-                        let layout = stacksIngredients
-                            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
-                            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
-                        layout {
-                            if !(stacksIngredients && ingredient.quantity.isEmpty) {
-                                Text(ingredient.quantity)
-                                    .fontWeight(.semibold)
-                                    .frame(width: stacksIngredients ? nil : quantityWidth, alignment: .leading)
-                            }
-                            Text(ingredient.name)
+                    ForEach(recipe.ingredientSections.indices, id: \.self) { index in
+                        let section = recipe.ingredientSections[index]
+                        if let title = section.title {
+                            sectionHeading(Text(title))
+                        }
+                        ForEach(section.items.indices, id: \.self) { itemIndex in
+                            ingredientRow(section.items[itemIndex])
                         }
                     }
                 }
                 .listRowBackground(Color.surface)
             }
 
-            if !recipe.steps.isEmpty {
+            if !recipe.stepSections.isEmpty {
                 Section("Steps") {
-                    ForEach(recipe.steps.indices, id: \.self) { index in
-                        HStack(alignment: .firstTextBaseline) {
-                            Text("\(index + 1).")
-                                .monospacedDigit()
-                                .foregroundStyle(.secondary)
-                            Text(recipe.steps[index])
+                    // Named sections are numbered; steps start again at 1 in each.
+                    let firstSectionNumber = recipe.stepSections.first?.title == nil ? 0 : 1
+                    ForEach(recipe.stepSections.indices, id: \.self) { index in
+                        let section = recipe.stepSections[index]
+                        if let title = section.title {
+                            sectionHeading(Text("\(index + firstSectionNumber). \(title)"))
                         }
-                        .accessibilityElement(children: .combine)
+                        ForEach(section.items.indices, id: \.self) { itemIndex in
+                            stepRow(section.items[itemIndex], number: itemIndex + 1)
+                        }
                     }
                 }
                 .listRowBackground(Color.surface)

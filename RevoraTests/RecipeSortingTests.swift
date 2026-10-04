@@ -13,8 +13,6 @@ struct RecipeSortingTests {
         Recipe(
             id: id ?? title,
             title: title,
-            ingredients: [],
-            steps: [],
             createdAt: Date(timeIntervalSince1970: created),
             updatedAt: Date(timeIntervalSince1970: updated ?? created),
             lastOpenedAt: opened.map(Date.init(timeIntervalSince1970:))

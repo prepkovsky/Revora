@@ -3,12 +3,16 @@ import SwiftUI
 struct RecipeEditorView: View {
     private typealias IngredientRow = RecipeDraft.IngredientRow
     private typealias StepRow = RecipeDraft.StepRow
+    private typealias BulletRow = RecipeDraft.BulletRow
 
     private enum Field: Hashable {
         case title
+        /// A section's name, in either list.
+        case section(UUID)
         case quantity(IngredientRow.ID)
         case name(IngredientRow.ID)
         case step(StepRow.ID)
+        case bullet(BulletRow.ID, step: StepRow.ID)
     }
 
     @Environment(RecipeRepository.self) private var recipeRepository
@@ -25,6 +29,8 @@ struct RecipeEditorView: View {
     @State private var isConfirmingDiscard = false
     @FocusState private var focusedField: Field?
     @ScaledMetric private var quantityWidth = 90.0
+    /// Steps under a numbered section sit in a little, so their numbers don't read as sections.
+    @ScaledMetric private var sectionIndent = 22.0
 
     /// At accessibility text sizes an amount column leaves the name too little room.
     private var stacksIngredientFields: Bool {
@@ -33,6 +39,14 @@ struct RecipeEditorView: View {
 
     private var hasChanges: Bool {
         draft.hasChanges(from: originalDraft)
+    }
+
+    /// The step being typed in, directly or in one of its bullet points.
+    private var focusedStepID: StepRow.ID? {
+        switch focusedField {
+        case .step(let id), .bullet(_, let id): id
+        default: nil
+        }
     }
 
     init(recipe: Recipe? = nil) {
@@ -79,54 +93,37 @@ struct RecipeEditorView: View {
 
                 Section("Ingredients") {
                     ForEach($draft.ingredients) { $row in
-                        let layout = stacksIngredientFields ? AnyLayout(VStackLayout()) : AnyLayout(HStackLayout())
-                        layout {
-                            TextField("Amount", text: $row.quantity, prompt: Text("Amount"))
-                                .autocorrectionDisabled()
-                                .frame(width: stacksIngredientFields ? nil : quantityWidth)
-                                .focused($focusedField, equals: .quantity(row.id))
-                                .submitLabel(.next)
-                                .onSubmit { focusedField = .name(row.id) }
-                            Divider()
-                            TextField("Ingredient", text: $row.name, prompt: Text("Ingredient"))
-                                .focused($focusedField, equals: .name(row.id))
-                                .submitLabel(.next)
-                                .onSubmit { focusIngredient(after: row) }
+                        if row.isSection {
+                            sectionField($row.name, id: row.id) { focusIngredient(afterSection: row) }
+                        } else {
+                            ingredientFields($row)
                         }
                     }
                     .onDelete { draft.ingredients.remove(atOffsets: $0) }
                     .onMove { draft.ingredients.move(fromOffsets: $0, toOffset: $1) }
 
-                    Button("Add Ingredient", systemImage: "plus.circle.fill", action: addIngredient)
+                    Button("Add Ingredient", systemImage: "plus.circle.fill") { addIngredient() }
+                    Button("Add Section", systemImage: "text.badge.plus", action: addIngredientSection)
                 }
                 .listRowBackground(Color.surface)
 
                 Section("Steps") {
-                    ForEach($draft.steps) { $step in
-                        let number = stepNumber(of: step)
-                        // Not .firstTextBaseline: an empty vertical text field reports its baseline a line too low.
-                        HStack(alignment: .top) {
-                            Text("\(number).")
-                                .monospacedDigit()
-                                .foregroundStyle(.secondary)
-                                .accessibilityHidden(true)
-                            TextField("Step \(number)", text: $step.text, prompt: Text("Describe this step"), axis: .vertical)
-                                .focused($focusedField, equals: .step(step.id))
-                                .submitLabel(.next)
-                                .onSubmit { focusStep(after: step) }
-                                // Some iOS versions type Return in a vertical text field as a line break
-                                // instead of submitting, and pasted text can contain them too.
-                                .onChange(of: step.text) {
-                                    if step.removeLineBreaks() {
-                                        focusStep(after: step)
-                                    }
-                                }
+                    let numbers = draft.stepNumbers
+                    let sectionedSteps = Set(draft.steps.drop { !$0.isSection }.map(\.id))
+                    ForEach($draft.steps) { $row in
+                        let number = numbers[row.id] ?? 0
+                        if row.isSection {
+                            sectionField($row.text, id: row.id, number: number) { focusStep(afterSection: row) }
+                        } else {
+                            stepFields($row, number: number)
+                                .padding(.leading, sectionedSteps.contains(row.id) ? sectionIndent : 0)
                         }
                     }
                     .onDelete { draft.steps.remove(atOffsets: $0) }
                     .onMove { draft.steps.move(fromOffsets: $0, toOffset: $1) }
 
-                    Button("Add Step", systemImage: "plus.circle.fill", action: addStep)
+                    Button("Add Step", systemImage: "plus.circle.fill") { addStep() }
+                    Button("Add Section", systemImage: "text.badge.plus", action: addStepSection)
                 }
                 .listRowBackground(Color.surface)
             }
@@ -155,6 +152,15 @@ struct RecipeEditorView: View {
                     Button("Save", action: save)
                         .disabled(!draft.canSave || isPreparingPhoto)
                 }
+                ToolbarItemGroup(placement: .keyboard) {
+                    if focusedStepID != nil {
+                        Button("Add Bullet Point", systemImage: "list.bullet", action: addBulletAtFocus)
+                        Spacer()
+                    }
+                }
+            }
+            .onChange(of: focusedField) { previousField, _ in
+                removeIfBlankBullet(previousField)
             }
             .alert(
                 "Couldn't Save Recipe",
@@ -175,65 +181,277 @@ struct RecipeEditorView: View {
         .interactiveDismissDisabled(hasChanges)
     }
 
-    private func stepNumber(of step: StepRow) -> Int {
-        (draft.steps.firstIndex { $0.id == step.id } ?? 0) + 1
+    /// A section's name in either list. Step sections show their number.
+    private func sectionField(_ name: Binding<String>, id: UUID, number: Int? = nil, onSubmit: @escaping () -> Void) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            if let number {
+                Text("\(number).")
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+            }
+            TextField(text: name, prompt: Text("Section name")) {
+                if let number {
+                    Text("Section \(number)")
+                } else {
+                    Text("Section")
+                }
+            }
+            .focused($focusedField, equals: .section(id))
+            .submitLabel(.next)
+            .onSubmit(onSubmit)
+        }
+        .font(.headline)
     }
 
-    private func addIngredient() {
+    private func ingredientFields(_ row: Binding<IngredientRow>) -> some View {
+        let id = row.wrappedValue.id
+        let layout = stacksIngredientFields ? AnyLayout(VStackLayout()) : AnyLayout(HStackLayout())
+        return layout {
+            TextField("Amount", text: row.quantity, prompt: Text("Amount"))
+                .autocorrectionDisabled()
+                .frame(width: stacksIngredientFields ? nil : quantityWidth)
+                .focused($focusedField, equals: .quantity(id))
+                .submitLabel(.next)
+                .onSubmit { focusedField = .name(id) }
+            Divider()
+            TextField("Ingredient", text: row.name, prompt: Text("Ingredient"))
+                .focused($focusedField, equals: .name(id))
+                .submitLabel(.next)
+                .onSubmit { focusIngredient(after: row.wrappedValue) }
+        }
+    }
+
+    /// The step's text with its bullet points underneath, all in one row, so they move and delete together.
+    private func stepFields(_ step: Binding<StepRow>, number: Int) -> some View {
+        let id = step.wrappedValue.id
+        // Not .firstTextBaseline: an empty vertical text field reports its baseline a line too low.
+        return HStack(alignment: .top) {
+            Text("\(number).")
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 10) {
+                TextField("Step \(number)", text: step.text, prompt: Text("Describe this step"), axis: .vertical)
+                    .focused($focusedField, equals: .step(id))
+                    .submitLabel(.next)
+                    .onSubmit { focusStep(afterText: step.wrappedValue) }
+                    // Some iOS versions type Return in a vertical text field as a line break
+                    // instead of submitting, and pasted text can contain them too.
+                    .onChange(of: step.wrappedValue.text) {
+                        if step.wrappedValue.removeLineBreaks() {
+                            focusStep(afterText: step.wrappedValue)
+                        }
+                    }
+
+                ForEach(step.bullets) { $bullet in
+                    HStack(alignment: .top) {
+                        Text("•")
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                        TextField("Bullet point", text: $bullet.text, prompt: Text("Bullet point"), axis: .vertical)
+                            .focused($focusedField, equals: .bullet(bullet.id, step: id))
+                            .submitLabel(.next)
+                            .onSubmit { focusBullet(after: bullet, inStep: id) }
+                            .onChange(of: bullet.text) {
+                                if bullet.removeLineBreaks() {
+                                    focusBullet(after: bullet, inStep: id)
+                                }
+                            }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: Ingredients
+
+    private func addIngredient(at index: Int? = nil) {
         let row = IngredientRow()
-        draft.ingredients.append(row)
+        draft.ingredients.insert(row, at: index ?? draft.ingredients.endIndex)
         focusedField = .quantity(row.id)
     }
 
-    private func addStep() {
-        let step = StepRow()
-        draft.steps.append(step)
-        focusedField = .step(step.id)
+    /// At the end: a list followed by a section like "For the garnish" is common.
+    private func addIngredientSection() {
+        let row = IngredientRow(isSection: true)
+        draft.ingredients.append(row)
+        focusedField = .section(row.id)
+    }
+
+    private func focus(_ row: IngredientRow) {
+        focusedField = row.isSection ? .section(row.id) : .quantity(row.id)
     }
 
     private func focusFirstIngredient() {
         if let first = draft.ingredients.first {
-            focusedField = .quantity(first.id)
+            focus(first)
         } else {
             addIngredient()
         }
+    }
+
+    /// Return on a section's name moves to its first ingredient, adding one if it has none.
+    /// On an empty name it removes the section and moves on.
+    private func focusIngredient(afterSection row: IngredientRow) {
+        guard let index = draft.ingredients.firstIndex(where: { $0.id == row.id }) else { return }
+        let next = draft.ingredients.dropFirst(index + 1).first
+        if row.isBlank {
+            removeIngredient(row, movingTo: next)
+        } else if let next, !next.isSection {
+            focusedField = .quantity(next.id)
+        } else {
+            addIngredient(at: index + 1)
+        }
+    }
+
+    /// Return on the last ingredient of a section, or of the list, starts a new one below it.
+    /// On an empty one it removes that row and moves on to the next section, or to the steps.
+    private func focusIngredient(after row: IngredientRow) {
+        guard let index = draft.ingredients.firstIndex(where: { $0.id == row.id }) else { return }
+        let next = draft.ingredients.dropFirst(index + 1).first
+        if let next, !next.isSection {
+            focusedField = .quantity(next.id)
+        } else if !row.isBlank {
+            addIngredient(at: index + 1)
+        } else {
+            removeIngredient(row, movingTo: next)
+        }
+    }
+
+    private func removeIngredient(_ row: IngredientRow, movingTo next: IngredientRow?) {
+        if let next {
+            focus(next)
+        } else {
+            focusFirstStep()
+        }
+        removeAfterFocusMoves { $0.ingredients.removeAll { $0.id == row.id } }
+    }
+
+    // MARK: Steps
+
+    private func addStep(at index: Int? = nil) {
+        let step = StepRow()
+        draft.steps.insert(step, at: index ?? draft.steps.endIndex)
+        focusedField = .step(step.id)
+    }
+
+    /// Numbered sections need every step to be in one, so the first section goes above the
+    /// steps already there and they become its steps. Later sections go at the end.
+    private func addStepSection() {
+        let row = StepRow(isSection: true)
+        if draft.steps.contains(where: \.isSection) {
+            draft.steps.append(row)
+        } else {
+            draft.steps.insert(row, at: 0)
+        }
+        focusedField = .section(row.id)
+    }
+
+    private func focus(_ row: StepRow?) {
+        focusedField = row.map { $0.isSection ? .section($0.id) : .step($0.id) }
     }
 
     private func focusFirstStep() {
         if let first = draft.steps.first {
-            focusedField = .step(first.id)
+            focus(first)
         } else {
             addStep()
         }
     }
 
-    /// Return on the last row starts a new one. On an empty last row it removes
-    /// that row and moves on to the steps.
-    private func focusIngredient(after row: IngredientRow) {
-        guard let index = draft.ingredients.firstIndex(where: { $0.id == row.id }) else { return }
-        let next = draft.ingredients.index(after: index)
-        if next < draft.ingredients.endIndex {
-            focusedField = .quantity(draft.ingredients[next].id)
-        } else if !row.isBlank {
-            addIngredient()
+    /// Return on a section's name moves to its first step, adding one if it has none.
+    /// On an empty name it removes the section and moves on.
+    private func focusStep(afterSection row: StepRow) {
+        guard let index = draft.steps.firstIndex(where: { $0.id == row.id }) else { return }
+        let next = draft.steps.dropFirst(index + 1).first
+        if row.isBlank {
+            removeStep(row, movingTo: next)
+        } else if let next, !next.isSection {
+            focusedField = .step(next.id)
         } else {
-            focusFirstStep()
-            removeAfterFocusMoves { $0.ingredients.removeAll { $0.id == row.id } }
+            addStep(at: index + 1)
         }
     }
 
-    /// Return on the last step starts a new one. On an empty last step it removes
-    /// that step and closes the keyboard.
+    /// Return in a step's text moves to its first bullet point, if it has any.
+    private func focusStep(afterText step: StepRow) {
+        if let bullet = step.bullets.first {
+            focusedField = .bullet(bullet.id, step: step.id)
+        } else {
+            focusStep(after: step)
+        }
+    }
+
+    /// Return at the end of the last step of a section, or of the list, starts a new one below it.
+    /// On an empty one it removes that step and moves on to the next section, or closes the keyboard.
     private func focusStep(after step: StepRow) {
         guard let index = draft.steps.firstIndex(where: { $0.id == step.id }) else { return }
-        let next = draft.steps.index(after: index)
-        if next < draft.steps.endIndex {
-            focusedField = .step(draft.steps[next].id)
+        let next = draft.steps.dropFirst(index + 1).first
+        if let next, !next.isSection {
+            focusedField = .step(next.id)
         } else if !step.isBlank {
-            addStep()
+            addStep(at: index + 1)
         } else {
-            focusedField = nil
-            removeAfterFocusMoves { $0.steps.removeAll { $0.id == step.id } }
+            removeStep(step, movingTo: next)
+        }
+    }
+
+    private func removeStep(_ row: StepRow, movingTo next: StepRow?) {
+        focus(next)
+        removeAfterFocusMoves { $0.steps.removeAll { $0.id == row.id } }
+    }
+
+    // MARK: Bullet points
+
+    private func addBullet(toStep stepID: StepRow.ID, at position: Int? = nil) {
+        guard let index = draft.steps.firstIndex(where: { $0.id == stepID }) else { return }
+        let bullet = BulletRow()
+        draft.steps[index].bullets.insert(bullet, at: position ?? draft.steps[index].bullets.endIndex)
+        focusedField = .bullet(bullet.id, step: stepID)
+    }
+
+    /// Right under where people are typing: below the step's text, or after the bullet point.
+    private func addBulletAtFocus() {
+        switch focusedField {
+        case .step(let stepID):
+            addBullet(toStep: stepID, at: 0)
+        case .bullet(let bulletID, let stepID):
+            let index = draft.steps.first { $0.id == stepID }?.bullets.firstIndex { $0.id == bulletID }
+            addBullet(toStep: stepID, at: index.map { $0 + 1 })
+        default:
+            break
+        }
+    }
+
+    /// Bullet points have no delete button of their own, so an empty one goes once people move on.
+    private func removeIfBlankBullet(_ field: Field?) {
+        guard case .bullet(let bulletID, let stepID) = field,
+              let step = draft.steps.first(where: { $0.id == stepID }),
+              step.bullets.first(where: { $0.id == bulletID })?.isBlank == true else { return }
+        removeAfterFocusMoves { draft in
+            guard let stepIndex = draft.steps.firstIndex(where: { $0.id == stepID }) else { return }
+            draft.steps[stepIndex].bullets.removeAll { $0.id == bulletID && $0.isBlank }
+        }
+    }
+
+    /// Return in a bullet point starts the next one. On an empty last one it removes it and
+    /// moves on to the next step, like ending a list in Notes.
+    private func focusBullet(after bullet: BulletRow, inStep stepID: StepRow.ID) {
+        guard let step = draft.steps.first(where: { $0.id == stepID }),
+              let index = step.bullets.firstIndex(where: { $0.id == bullet.id }) else { return }
+        if index + 1 < step.bullets.endIndex {
+            focusedField = .bullet(step.bullets[index + 1].id, step: stepID)
+        } else if !bullet.isBlank {
+            addBullet(toStep: stepID, at: index + 1)
+        } else {
+            var rest = step
+            rest.bullets.remove(at: index)
+            focusStep(after: rest)
+            removeAfterFocusMoves { draft in
+                guard let stepIndex = draft.steps.firstIndex(where: { $0.id == stepID }) else { return }
+                draft.steps[stepIndex].bullets.removeAll { $0.id == bullet.id }
+            }
         }
     }
 
@@ -277,8 +495,8 @@ struct RecipeEditorView: View {
         _ = try recipeRepository.create(
             id: recipeID,
             title: draft.trimmedTitle,
-            ingredients: draft.trimmedIngredients,
-            steps: draft.trimmedSteps,
+            ingredientSections: draft.trimmedIngredientSections,
+            stepSections: draft.trimmedStepSections,
             mealTypes: draft.mealTypes.inDisplayOrder(),
             photoID: savePhoto(recipeID: recipeID)
         )

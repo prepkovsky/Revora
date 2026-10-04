@@ -15,10 +15,10 @@ final class AppNavigation {
     /// Narrows the Recipes tab to one meal, on top of `recipeFilter`. `nil` shows every meal.
     var mealType: MealType?
 
-    /// Clears the meal filter too, so people see everything the link promised.
-    func showRecipes(_ filter: RecipeFilter) {
+    /// Sets the meal filter too, clearing it when there's none, so people see everything the link promised.
+    func showRecipes(_ filter: RecipeFilter, mealType: MealType? = nil) {
         recipeFilter = filter
-        mealType = nil
+        self.mealType = mealType
         selectedTab = .recipes
     }
 }

@@ -87,8 +87,9 @@ struct HomeView: View {
         } else if recipeRepository.recipes.isEmpty {
             welcome
         } else {
-            let summary = HomeSummary(recipes: recipeRepository.recipes)
-            actions(summary, mealType: Greeting(date: now).mealType)
+            let summary = HomeSummary(recipes: recipeRepository.recipes, now: now)
+            let greeting = Greeting(date: now)
+            actions(summary, mealType: greeting.mealType)
             if let recipe = summary.continueRecipe {
                 section("Continue Cooking") {
                     NavigationLink(value: recipe) {
@@ -97,7 +98,10 @@ struct HomeView: View {
                     .buttonStyle(.card)
                 }
             }
+            mealRow(summary.recipes(for: greeting.mealType), greeting: greeting)
             favorites(summary.favorites)
+            rediscover(summary.rediscover)
+            browseByMeal(summary.mealCounts)
         }
     }
 
@@ -150,6 +154,15 @@ struct HomeView: View {
         }
     }
 
+    /// Answers the greeting's question, like "What's for dinner?". Hidden when no recipe is for that meal.
+    @ViewBuilder private func mealRow(_ recipes: [Recipe], greeting: Greeting) -> some View {
+        if !recipes.isEmpty {
+            section(greeting.mealTitle, seeAll: { navigation.showRecipes(.all, mealType: greeting.mealType) }) {
+                recipeRow(recipes)
+            }
+        }
+    }
+
     @ViewBuilder private func favorites(_ recipes: [Recipe]) -> some View {
         section("Favorites", seeAll: { navigation.showRecipes(.favorites) }) {
             if recipes.isEmpty {
@@ -165,24 +178,58 @@ struct HomeView: View {
                 .padding(16)
                 .background(.surface, in: .rect(cornerRadius: 18))
             } else {
-                ScrollView(.horizontal) {
-                    LazyHStack(alignment: .top, spacing: 14) {
-                        ForEach(recipes) { recipe in
-                            NavigationLink(value: recipe) {
-                                FavoriteRecipeCard(recipe: recipe)
-                            }
-                            .buttonStyle(.card)
-                        }
-                    }
-                    .scrollTargetLayout()
-                }
-                .scrollTargetBehavior(.viewAligned)
-                .scrollIndicators(.hidden)
-                // Runs to the screen's edges, so it's clear the row scrolls.
-                .contentMargins(.horizontal, margin, for: .scrollContent)
-                .padding(.horizontal, -margin)
+                recipeRow(recipes)
             }
         }
+    }
+
+    @ViewBuilder private func rediscover(_ recipes: [Recipe]) -> some View {
+        if !recipes.isEmpty {
+            section("Rediscover", subtitle: "Not opened in a month or more") {
+                recipeRow(recipes)
+            }
+        }
+    }
+
+    /// Hidden until a recipe has a meal, since every tile would be empty.
+    @ViewBuilder private func browseByMeal(_ counts: [MealType: Int]) -> some View {
+        if !counts.isEmpty {
+            section("Browse by Meal") {
+                // Two side by side are too narrow for accessibility text sizes.
+                let columns = dynamicTypeSize.isAccessibilitySize
+                    ? [GridItem(.flexible())]
+                    : [GridItem(.flexible(), spacing: 12), GridItem(.flexible())]
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(MealType.allCases) { mealType in
+                        Button {
+                            navigation.showRecipes(.all, mealType: mealType)
+                        } label: {
+                            MealTile(mealType: mealType, count: counts[mealType, default: 0])
+                        }
+                        .buttonStyle(.card)
+                    }
+                }
+            }
+        }
+    }
+
+    private func recipeRow(_ recipes: [Recipe]) -> some View {
+        ScrollView(.horizontal) {
+            LazyHStack(alignment: .top, spacing: 14) {
+                ForEach(recipes) { recipe in
+                    NavigationLink(value: recipe) {
+                        RecipeCard(recipe: recipe)
+                    }
+                    .buttonStyle(.card)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollTargetBehavior(.viewAligned)
+        .scrollIndicators(.hidden)
+        // Runs to the screen's edges, so it's clear the row scrolls.
+        .contentMargins(.horizontal, margin, for: .scrollContent)
+        .padding(.horizontal, -margin)
     }
 
     private var welcome: some View {
@@ -214,18 +261,26 @@ struct HomeView: View {
 
     private func section(
         _ title: LocalizedStringResource,
+        subtitle: LocalizedStringResource? = nil,
         seeAll: (() -> Void)? = nil,
         @ViewBuilder content: () -> some View
     ) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(title)
-                    .font(.display(.title2))
-                    .accessibilityAddTraits(.isHeader)
-                Spacer()
-                if let seeAll {
-                    Button("See All", action: seeAll)
-                        .font(.subheadline.weight(.semibold))
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(title)
+                        .font(.display(.title2))
+                        .accessibilityAddTraits(.isHeader)
+                    Spacer()
+                    if let seeAll {
+                        Button("See All", action: seeAll)
+                            .font(.subheadline.weight(.semibold))
+                    }
+                }
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
             }
             content()

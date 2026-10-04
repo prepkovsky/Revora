@@ -49,6 +49,16 @@ enum Greeting: Equatable {
         }
     }
 
+    /// Home's row of recipes for `mealType`.
+    var mealTitle: LocalizedStringResource {
+        switch self {
+        case .morning: "For Breakfast"
+        case .afternoon: "For Lunch"
+        case .evening: "For Dinner"
+        case .lateNight: "Midnight Snacks"
+        }
+    }
+
     /// The line under the greeting, for the meal people are most likely planning.
     var prompt: LocalizedStringResource {
         switch self {

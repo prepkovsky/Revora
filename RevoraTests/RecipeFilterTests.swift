@@ -20,8 +20,6 @@ struct RecipeFilterTests {
         Recipe(
             id: title,
             title: title,
-            ingredients: [],
-            steps: [],
             mealTypes: mealTypes,
             isFavorite: isFavorite,
             createdAt: daysAgo(60),

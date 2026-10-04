@@ -8,11 +8,16 @@ struct RecipeCodingTests {
     private let recipe = Recipe(
         id: "recipe-1",
         title: "Pancakes",
-        ingredients: [
-            Ingredient(name: "Flour", quantity: "200 g"),
-            Ingredient(name: "Milk", quantity: "300 ml"),
+        ingredientSections: [
+            RecipeSection(title: nil, items: [Ingredient(name: "Flour", quantity: "200 g")]),
+            RecipeSection(title: "For the batter", items: [Ingredient(name: "Milk", quantity: "300 ml")]),
         ],
-        steps: ["Whisk everything together.", "Fry in a hot pan."],
+        stepSections: [
+            RecipeSection(title: "Make the batter", items: [
+                Step(text: "Whisk together:", bullets: ["the flour", "the milk"]),
+            ]),
+            RecipeSection(title: "Cook", items: [Step(text: "Fry in a hot pan.")]),
+        ],
         mealTypes: [.breakfast, .dessert],
         photoID: "photo-1",
         isFavorite: true,
@@ -32,19 +37,77 @@ struct RecipeCodingTests {
         let data = try Firestore.Encoder().encode(recipe)
 
         #expect(Set(data.keys) == [
-            "title", "ingredients", "steps", "mealTypes", "photoID", "isFavorite", "createdAt", "updatedAt", "lastOpenedAt",
+            "title", "ingredientSections", "stepSections", "mealTypes", "photoID", "isFavorite", "createdAt", "updatedAt",
+            "lastOpenedAt",
         ])
         #expect(data["mealTypes"] as? [String] == ["breakfast", "dessert"])
         #expect(data["photoID"] as? String == "photo-1")
         #expect(data["title"] as? String == "Pancakes")
-        #expect(data["steps"] as? [String] == recipe.steps)
         #expect(data["isFavorite"] as? Bool == true)
         #expect(data["createdAt"] as? Timestamp == Timestamp(date: recipe.createdAt))
 
-        let ingredients = try #require(data["ingredients"] as? [[String: Any]])
-        #expect(ingredients.count == 2)
+        let ingredientSections = try #require(data["ingredientSections"] as? [[String: Any]])
+        #expect(ingredientSections.count == 2)
+        #expect(ingredientSections[0]["title"] == nil)
+        #expect(ingredientSections[1]["title"] as? String == "For the batter")
+        let ingredients = try #require(ingredientSections[0]["items"] as? [[String: Any]])
         #expect(ingredients.first?["name"] as? String == "Flour")
         #expect(ingredients.first?["quantity"] as? String == "200 g")
+
+        let stepSections = try #require(data["stepSections"] as? [[String: Any]])
+        #expect(stepSections.first?["title"] as? String == "Make the batter")
+        let steps = try #require(stepSections.first?["items"] as? [[String: Any]])
+        #expect(steps.first?["text"] as? String == "Whisk together:")
+        #expect(steps.first?["bullets"] as? [String] == ["the flour", "the milk"])
+    }
+
+    @Test func decodesRecipeSavedBeforeSections() throws {
+        var data = try Firestore.Encoder().encode(recipe)
+        data["ingredientSections"] = nil
+        data["stepSections"] = nil
+        data["ingredients"] = [["name": "Flour", "quantity": "200 g"], ["name": "Salt", "quantity": ""]]
+        data["steps"] = ["Whisk everything together.", "Fry in a hot pan."]
+
+        let decoded = try decode(data)
+        #expect(decoded.ingredientSections == [RecipeSection(title: nil, items: [
+            Ingredient(name: "Flour", quantity: "200 g"),
+            Ingredient(name: "Salt", quantity: ""),
+        ])])
+        #expect(decoded.stepSections == [RecipeSection(title: nil, items: [
+            Step(text: "Whisk everything together."),
+            Step(text: "Fry in a hot pan."),
+        ])])
+    }
+
+    @Test func decodesEmptyListsSavedBeforeSections() throws {
+        var data = try Firestore.Encoder().encode(recipe)
+        data["ingredientSections"] = nil
+        data["stepSections"] = nil
+        data["ingredients"] = [Any]()
+        data["steps"] = [Any]()
+
+        let decoded = try decode(data)
+        #expect(decoded.ingredientSections.isEmpty)
+        #expect(decoded.stepSections.isEmpty)
+    }
+
+    @Test func savingWritesOnlyTheNewShape() throws {
+        var data = try Firestore.Encoder().encode(recipe)
+        data["ingredientSections"] = nil
+        data["stepSections"] = nil
+        data["ingredients"] = [["name": "Flour", "quantity": "200 g"]]
+        data["steps"] = ["Whisk."]
+
+        let resaved = try Firestore.Encoder().encode(decode(data))
+        #expect(resaved["ingredients"] == nil)
+        #expect(resaved["steps"] == nil)
+        #expect(resaved["ingredientSections"] != nil)
+        #expect(resaved["stepSections"] != nil)
+    }
+
+    @Test func flattensSectionsInOrder() {
+        #expect(recipe.ingredients.map(\.name) == ["Flour", "Milk"])
+        #expect(recipe.steps.map(\.text) == ["Whisk together:", "Fry in a hot pan."])
     }
 
     @Test func leavesOutMissingLastOpened() throws {

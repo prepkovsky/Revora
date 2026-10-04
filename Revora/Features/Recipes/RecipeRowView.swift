@@ -46,12 +46,12 @@ struct RecipeRowView: View {
         RecipeRowView(recipe: Recipe(
             id: "1",
             title: "Pancakes",
-            ingredients: [Ingredient(name: "Flour", quantity: "200 g")],
-            steps: ["Whisk everything together.", "Fry in a hot pan."],
+            ingredientSections: RecipeSection.untitled([Ingredient(name: "Flour", quantity: "200 g")]),
+            stepSections: RecipeSection.untitled([Step(text: "Whisk everything together."), Step(text: "Fry in a hot pan.")]),
             createdAt: .now,
             updatedAt: .now
         ))
-        RecipeRowView(recipe: Recipe(id: "2", title: "Banana Bread", ingredients: [], steps: [], isFavorite: true, createdAt: .now, updatedAt: .now))
+        RecipeRowView(recipe: Recipe(id: "2", title: "Banana Bread", isFavorite: true, createdAt: .now, updatedAt: .now))
     }
     .environment(RecipePhotoStore())
 }

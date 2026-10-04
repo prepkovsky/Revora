@@ -127,20 +127,30 @@ struct RecipesView: View {
 
     /// One meal at a time. Tapping the picked one again shows every meal.
     private var mealChips: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 8) {
-                ForEach(MealType.allCases) { mealType in
-                    MealTypeChip(mealType: mealType, isSelected: navigation.mealType == mealType) {
-                        withAnimation(.snappy) {
-                            navigation.mealType = navigation.mealType == mealType ? nil : mealType
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                HStack(spacing: 8) {
+                    ForEach(MealType.allCases) { mealType in
+                        MealTypeChip(mealType: mealType, isSelected: navigation.mealType == mealType) {
+                            withAnimation(.snappy) {
+                                navigation.mealType = navigation.mealType == mealType ? nil : mealType
+                            }
                         }
+                        .id(mealType)
                     }
                 }
             }
+            .scrollIndicators(.hidden)
+            // Chips scroll out to the screen's edges instead of being cut off at the row's.
+            .scrollClipDisabled()
+            // Home can pick a meal whose chip is off screen, like Drink.
+            .onChange(of: navigation.mealType, initial: true) {
+                guard let mealType = navigation.mealType else { return }
+                withAnimation(.snappy) {
+                    proxy.scrollTo(mealType, anchor: .center)
+                }
+            }
         }
-        .scrollIndicators(.hidden)
-        // Chips scroll out to the screen's edges instead of being cut off at the row's.
-        .scrollClipDisabled()
     }
 
     /// All is only empty when there are no recipes at all, which has its own screen.

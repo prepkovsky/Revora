@@ -51,8 +51,8 @@ final class RecipeRepository {
     func create(
         id: Recipe.ID,
         title: String,
-        ingredients: [Ingredient],
-        steps: [String],
+        ingredientSections: [RecipeSection<Ingredient>],
+        stepSections: [RecipeSection<Step>],
         mealTypes: [MealType] = [],
         photoID: String? = nil
     ) throws(RecipeError) -> Recipe {
@@ -60,8 +60,8 @@ final class RecipeRepository {
         let recipe = Recipe(
             id: id,
             title: title,
-            ingredients: ingredients,
-            steps: steps,
+            ingredientSections: ingredientSections,
+            stepSections: stepSections,
             mealTypes: mealTypes,
             photoID: photoID,
             createdAt: now,

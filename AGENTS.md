@@ -33,7 +33,7 @@ The app needs `Revora/GoogleService-Info.plist` to build and run. It is gitignor
 Revora/
 ├── App/            App entry point, root view (auth vs. main tabs)
 ├── Services/       AuthService, RecipeRepository, RecipePhotoStore (Firebase wrappers)
-├── Models/         Recipe, Ingredient
+├── Models/         Recipe, RecipeSection, Ingredient, Step, MealType
 ├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
 ├── Components/     Shared reusable views
 ├── Resources/      Fonts (Fraunces Soft, registered in Info.plist's UIAppFonts), the in-app legal texts and open-source licences
@@ -55,12 +55,15 @@ RevoraTests/        Unit tests (Swift Testing)
 
 ```
 users/{uid}/recipes/{recipeId}
-  title, ingredients [{ name, quantity }], steps [String], mealTypes [String],
+  title, ingredientSections [{ title?, items [{ name, quantity }] }],
+  stepSections [{ title?, items [{ text, bullets [String] }] }], mealTypes [String],
   photoID?, isFavorite, createdAt, updatedAt, lastOpenedAt?
 
 users/{uid}/recipes/{recipeId}/photos/{photoID}       data: Bytes (JPEG, ≤ 500 KiB)
 users/{uid}/recipes/{recipeId}/thumbnails/{photoID}   data: Bytes (JPEG, ≤ 100 KiB)
 ```
+
+Sections split a recipe into named parts. `title` is missing for the items before the first named section. Step sections are numbered on screen, and their steps start again at 1. Recipes saved before sections have `ingredients [{ name, quantity }]` and `steps [String]` instead: they're read as one untitled section and written in the new shape the next time they're saved.
 
 `mealTypes` holds `MealType` raw values (breakfast, lunch, dinner, snack, dessert, drink) in that order. It's missing on older recipes, and unknown values are skipped when decoding.
 

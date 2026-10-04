@@ -52,8 +52,8 @@ struct ContinueCookingCard: View {
     }
 }
 
-/// A favorite in Home's horizontal row.
-struct FavoriteRecipeCard: View {
+/// A recipe in one of Home's horizontal rows.
+struct RecipeCard: View {
     let recipe: Recipe
 
     @ScaledMetric(relativeTo: .headline) private var width = 150.0
@@ -118,6 +118,46 @@ struct HomeActionTile: View {
     }
 }
 
+/// A meal in Home's Browse by Meal grid, with how many recipes are marked for it.
+struct MealTile: View {
+    let mealType: MealType
+    let count: Int
+
+    @ScaledMetric(relativeTo: .headline) private var iconSize = 40.0
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: mealType.systemImage)
+                .font(.headline)
+                .foregroundStyle(.secondaryAccent)
+                .frame(width: iconSize, height: iconSize)
+                .background(.appBackground, in: .circle)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(mealType.title)
+                    .font(.display(.headline))
+                    .foregroundStyle(.primary)
+                Group {
+                    if count == 0 {
+                        Text("None yet")
+                    } else {
+                        Text("^[\(count) recipe](inflect: true)")
+                    }
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            }
+            .multilineTextAlignment(.leading)
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .background(.surface, in: .rect(cornerRadius: 18))
+        .contentShape(.rect(cornerRadius: 18))
+    }
+}
+
 /// Cards press in a little, like the system's own, instead of just dimming.
 struct CardButtonStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -135,7 +175,7 @@ extension ButtonStyle where Self == CardButtonStyle {
 }
 
 #Preview {
-    let recipe = Recipe(id: "1", title: "Banana Bread", ingredients: [], steps: [], createdAt: .now, updatedAt: .now, lastOpenedAt: .now.addingTimeInterval(-7200))
+    let recipe = Recipe(id: "1", title: "Banana Bread", createdAt: .now, updatedAt: .now, lastOpenedAt: .now.addingTimeInterval(-7200))
     ScrollView {
         VStack(spacing: 20) {
             HStack(spacing: 12) {
@@ -144,7 +184,7 @@ extension ButtonStyle where Self == CardButtonStyle {
             }
             .fixedSize(horizontal: false, vertical: true)
             ContinueCookingCard(recipe: recipe)
-            FavoriteRecipeCard(recipe: recipe)
+            RecipeCard(recipe: recipe)
         }
         .padding()
     }
