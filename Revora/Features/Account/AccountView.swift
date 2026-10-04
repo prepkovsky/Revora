@@ -52,6 +52,15 @@ struct AccountView: View {
             }
             .listRowBackground(Color.surface)
 
+            Section("Support") {
+                NavigationLink {
+                    HelpView()
+                } label: {
+                    Label("Help", systemImage: "questionmark.circle")
+                }
+            }
+            .listRowBackground(Color.surface)
+
             Section("Legal") {
                 ForEach(LegalPage.allCases) { page in
                     NavigationLink {
