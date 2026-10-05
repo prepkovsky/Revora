@@ -89,7 +89,7 @@ nonisolated struct HelpTopic: Identifiable, Sendable {
             ),
             Question(
                 question: "I didn't get an email from Revora.",
-                answer: "Emails can take a few minutes, so check your spam or junk folder too, and make sure the address is spelled right. You can ask for a new link at any time."
+                answer: "Emails can take a few minutes, so check your spam or junk folder too, and make sure the address is spelled right. You can ask for a new link a minute after the last one."
             ),
             Question(
                 question: "How do I change my name, email or password?",

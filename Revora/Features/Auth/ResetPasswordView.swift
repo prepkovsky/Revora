@@ -13,6 +13,7 @@ struct ResetPasswordView: View {
     @State private var isSubmitting = false
     @State private var submitError: AuthError?
     @State private var sentToEmail: String?
+    @State private var emailWait: EmailRateLimit.Wait?
     @FocusState private var focusedField: Field?
 
     init(email: String = "") {
@@ -61,6 +62,7 @@ struct ResetPasswordView: View {
         .onChange(of: email) {
             submitError = nil
         }
+        .emailWait($emailWait, before: .passwordReset, to: trimmedEmail)
     }
 
     private var form: some View {
@@ -82,6 +84,8 @@ struct ResetPasswordView: View {
             VStack(alignment: .leading, spacing: 12) {
                 if let submitError, submitError != .invalidEmail {
                     ErrorMessage(message: submitError.message)
+                } else if let emailWait {
+                    EmailWaitNote(wait: emailWait)
                 }
 
                 Button(action: submit) {
@@ -89,7 +93,7 @@ struct ResetPasswordView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.primary)
-                .disabled(emailIssue != nil)
+                .disabled(emailIssue != nil || emailWait != nil)
             }
         }
     }
@@ -110,7 +114,7 @@ struct ResetPasswordView: View {
             isEmailChecked = true
             return
         }
-        guard !isSubmitting else { return }
+        guard !isSubmitting, emailWait == nil else { return }
 
         focusedField = nil
         isSubmitting = true

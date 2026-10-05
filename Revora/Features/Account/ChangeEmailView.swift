@@ -11,6 +11,7 @@ struct ChangeEmailView: View {
     @State private var isSubmitting = false
     @State private var submitError: AuthError?
     @State private var sentToEmail: String?
+    @State private var emailWait: EmailRateLimit.Wait?
     @FocusState private var focusedField: Field?
 
     init(currentEmail: String?) {
@@ -52,6 +53,7 @@ struct ChangeEmailView: View {
         .onChange(of: form) {
             submitError = nil
         }
+        .emailWait($emailWait, before: .emailChange, to: form.trimmedEmail)
     }
 
     private var formContent: some View {
@@ -91,6 +93,8 @@ struct ChangeEmailView: View {
             VStack(alignment: .leading, spacing: 12) {
                 if let submitError, field(for: submitError) == nil {
                     ErrorMessage(message: submitError.message)
+                } else if let emailWait {
+                    EmailWaitNote(wait: emailWait)
                 }
 
                 Button(action: submit) {
@@ -98,7 +102,7 @@ struct ChangeEmailView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.primary)
-                .disabled(!form.isValid)
+                .disabled(!form.isValid || emailWait != nil)
             }
         }
     }
@@ -131,7 +135,7 @@ struct ChangeEmailView: View {
             checkedFields = Set(Field.allCases)
             return
         }
-        guard !isSubmitting else { return }
+        guard !isSubmitting, emailWait == nil else { return }
 
         focusedField = nil
         isSubmitting = true

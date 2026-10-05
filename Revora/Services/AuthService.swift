@@ -60,10 +60,17 @@ final class AuthService {
     private(set) var isVerificationSent = false
 
     private let sentVerifications = SentVerifications()
+    private let emailRateLimit = EmailRateLimit()
 
     var currentUser: AuthUser? {
         guard case .signedIn(let user) = state else { return nil }
         return user
+    }
+
+    /// How long until another email of this kind can go to this address, so screens can say so
+    /// before people ask. Sending one sooner throws `tooManyRequests`.
+    func emailWait(before kind: EmailRateLimit.Kind, to address: String) -> EmailRateLimit.Wait? {
+        emailRateLimit.wait(before: kind, to: address)
     }
 
     /// Runs for as long as the calling task lives. The first value is the
@@ -125,10 +132,12 @@ final class AuthService {
     /// so nobody can move an account to an address they don't own. Opening it also ends every
     /// session, so people log in again with the new email.
     func requestEmailChange(to newEmail: String, password: String) async throws(AuthError) {
+        guard emailWait(before: .emailChange, to: newEmail) == nil else { throw .tooManyRequests }
         try await reauthenticate(password: password)
         guard let user = Auth.auth().currentUser else { throw .unknown }
         do {
             try await withTimeout { try await user.sendEmailVerification(beforeUpdatingEmail: newEmail) }
+            emailRateLimit.record(.emailChange, to: newEmail)
             pendingEmail = newEmail
             Self.logger.info("Email change requested")
         } catch {
@@ -140,8 +149,11 @@ final class AuthService {
     /// Firebase's default handler page confirms the email when the link is opened, on any device.
     func sendEmailVerification() async throws(AuthError) {
         guard let user = Auth.auth().currentUser else { throw .unknown }
+        let address = user.email ?? ""
+        guard emailWait(before: .verification, to: address) == nil else { throw .tooManyRequests }
         do {
             try await withTimeout { try await user.sendEmailVerification() }
+            emailRateLimit.record(.verification, to: address)
             sentVerifications.insert(user.uid)
             isVerificationSent = true
             Self.logger.info("Email confirmation sent")
@@ -195,11 +207,15 @@ final class AuthService {
     /// Firebase only emails addresses that have an account, but this succeeds either way
     /// so the screen can't be used to find out which emails have accounts.
     func sendPasswordReset(email: String) async throws(AuthError) {
+        guard emailWait(before: .passwordReset, to: email) == nil else { throw .tooManyRequests }
         do {
             try await withTimeout { try await Auth.auth().sendPasswordReset(withEmail: email) }
+            emailRateLimit.record(.passwordReset, to: email)
             Self.logger.info("Password reset requested")
         } catch let error as NSError
             where error.domain == AuthErrors.domain && error.code == AuthErrorCode.userNotFound.rawValue {
+            // Counted all the same, so the limit doesn't reveal which emails have accounts either.
+            emailRateLimit.record(.passwordReset, to: email)
             Self.logger.info("Password reset skipped: no account for that email")
         } catch {
             Self.logger.error("Password reset failed: \(error)")

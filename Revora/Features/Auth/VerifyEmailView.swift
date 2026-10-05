@@ -10,6 +10,8 @@ struct VerifyEmailView: View {
     @State private var isSending = false
     @State private var sendError: AuthError?
     @State private var resentCount = 0
+    @State private var sentCount = 0
+    @State private var emailWait: EmailRateLimit.Wait?
     @State private var logOutError: AuthError?
 
     private var displayEmail: String {
@@ -51,6 +53,8 @@ struct VerifyEmailView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     if let sendError {
                         ErrorMessage(message: sendError.message)
+                    } else if let emailWait {
+                        EmailWaitNote(wait: emailWait)
                     } else if resentCount > 0 {
                         Label("We sent a new link.", systemImage: "checkmark.circle")
                             .font(.footnote)
@@ -65,13 +69,14 @@ struct VerifyEmailView: View {
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                         .fontWeight(.semibold)
-                        .disabled(isSending)
+                        .disabled(isSending || emailWait != nil)
                     } else {
                         Button(action: sendLink) {
                             ProgressButtonLabel(title: "Send Link", isInProgress: isSending)
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.primary)
+                        .disabled(emailWait != nil)
                     }
                 }
                 .padding(.top, 8)
@@ -90,6 +95,8 @@ struct VerifyEmailView: View {
         .navigationTitle("Confirm Email")
         .navigationBarTitleDisplayMode(.inline)
         .sensoryFeedback(.success, trigger: resentCount)
+        // Registering sent the first link, so this starts out waiting.
+        .emailWait($emailWait, before: .verification, to: email ?? "", trigger: sentCount)
         // The link may be opened on another device, so the app never goes away and comes back.
         // Runs for as long as the screen shows, since there's no button to check by hand.
         .task {
@@ -112,7 +119,7 @@ struct VerifyEmailView: View {
     }
 
     private func sendLink() {
-        guard !isSending else { return }
+        guard !isSending, emailWait == nil else { return }
         let wasSent = authService.isVerificationSent
         isSending = true
         sendError = nil
@@ -120,6 +127,7 @@ struct VerifyEmailView: View {
             defer { isSending = false }
             do throws(AuthError) {
                 try await authService.sendEmailVerification()
+                sentCount += 1
                 if wasSent {
                     resentCount += 1
                 }

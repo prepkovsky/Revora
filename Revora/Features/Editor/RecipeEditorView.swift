@@ -27,6 +27,8 @@ struct RecipeEditorView: View {
     @State private var isPreparingPhoto = false
     @State private var saveErrorMessage: String?
     @State private var isConfirmingDiscard = false
+    /// A second tap while the sheet closes would otherwise save a new recipe twice.
+    @State private var isSaved = false
     @FocusState private var focusedField: Field?
     @ScaledMetric private var quantityWidth = 90.0
     /// Steps under a numbered section sit in a little, so their numbers don't read as sections.
@@ -548,13 +550,14 @@ struct RecipeEditorView: View {
     }
 
     private func save() {
-        guard draft.canSave, !isPreparingPhoto else { return }
+        guard draft.canSave, !isPreparingPhoto, !isSaved else { return }
         do {
             if let recipe {
                 try saveChanges(to: recipe)
             } else {
                 try createRecipe()
             }
+            isSaved = true
             dismiss()
         } catch let error as RecipeError {
             saveErrorMessage = error.message
