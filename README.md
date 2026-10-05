@@ -1,59 +1,59 @@
 # Revora
 
-A simple recipe app for iPhone and iPad. Sign up with email and password, save your own recipes (title, ingredients and steps, split into sections if you like, plus meal types), and mark your favorites.
+**Your recipes, beautifully kept.** Revora is a calm, simple cookbook for iPhone and iPad. Save the recipes you cook, find the right one for the moment, and have them with you in the kitchen, even offline.
 
-> **Status:** early development. Accounts, recipes (create, edit, delete, cover photos, sections and bullet points), favorites, meal types, the recipe filters and search, the Home screen (greeting, quick actions, continue cooking, a row for the current meal, favorites, rediscover and browse by meal), and the Account tab (name, email and password changes, log out, appearance, legal pages and account deletion) are in place, and the app keeps working offline. Polish is next: accessibility and iPad.
+## What you can do
+
+### Write recipes your way
+
+- Add a title, ingredients and steps, and a cover photo from your library or camera.
+- Split long recipes into parts, like "For the dough" and "For the filling". Step sections are numbered, and you can add bullet points under any step.
+- Tag recipes as breakfast, lunch, dinner, snack, dessert or drink.
+- Type a whole recipe in one go: Return moves you on to the next field.
+
+### A home screen that knows what time it is
+
+- A greeting for the time of day, and the recipe you opened last, ready to pick up where you left off.
+- Recipes for the meal coming up: breakfast ideas in the morning, dinner in the evening.
+- **Surprise Me** picks something for you when you can't decide.
+- Your favorites close at hand, and **Rediscover** brings back recipes you haven't opened in a while.
+
+### Find anything quickly
+
+- Switch between recently opened recipes, all of them, or your favorites.
+- Narrow the list to one meal, or search by name. Accents and capitals don't matter.
+
+### With you everywhere
+
+- Works offline. Open and edit recipes without a connection, and Revora syncs when you're back.
+- Log in on your iPhone and iPad, and your recipes are on both.
+- Light and dark mode, large text, VoiceOver, and a layout made for the iPad's bigger screen.
+
+## Private by design
+
+Your recipes are yours. Only you can see them: they're tied to your account, and nobody else can open them.
+
+- No ads and no tracking.
+- Photos are shrunk on your device before they're saved, and their location is removed.
+- Delete your account at any time, and your recipes and photos go with it.
+
+Read the full Privacy Policy in the app, under Account → Legal.
 
 ## Requirements
 
-- Xcode 27
-- iOS / iPadOS 18 or later
-- A Firebase project with **Authentication** (Email/Password) and **Cloud Firestore** enabled
+- An iPhone or iPad with iOS or iPadOS 18 or later
+- An email address, to create your account
 
-## Setup
+## Get Revora
 
-1. Clone the repo and open `Revora.xcodeproj`. Xcode resolves the Firebase packages (FirebaseAuth and FirebaseFirestore) through Swift Package Manager.
-2. In the Firebase console, register an iOS app with the project's bundle ID and download its `GoogleService-Info.plist`.
-3. Put the file at `Revora/GoogleService-Info.plist`. It's gitignored on purpose, so don't commit it.
-4. Build and run the **Revora** scheme.
+Revora is coming soon to the App Store.
 
-The app won't build without `GoogleService-Info.plist`.
+## For developers
 
-## Building and testing
+How Revora is built, and how to set it up and run it, is in the [developer documentation](docs/documentation.md).
 
-Build from the command line:
+The code is public so you can see how Revora is built, but it isn't open source: all rights are reserved.
 
-```sh
-xcodebuild -project Revora.xcodeproj -scheme Revora -sdk iphonesimulator \
-  -configuration Debug build CODE_SIGNING_ALLOWED=NO
-```
-
-Run the unit tests (any iPhone simulator on iOS 18 or later works):
-
-```sh
-xcodebuild -project Revora.xcodeproj -scheme Revora \
-  -destination 'platform=iOS Simulator,name=iPhone 17' test
-```
-
-The unit tests use Swift Testing and never call Firebase.
-
-## Project structure
-
-```
-Revora/
-├── App/            App entry point, root view and tab bar
-├── Services/       Firebase wrappers (auth, recipe storage), connectivity
-├── Models/         Recipe data types
-├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
-├── Components/     Shared reusable views
-└── Resources/      Fonts, legal texts and open-source licences
-RevoraTests/        Unit tests
-```
-
-Some folders appear only once their first files are added.
-
-Built with SwiftUI in Swift 6 language mode. Recipes and their cover photos are stored in Firestore under `users/{uid}/recipes`, so the project runs on Firebase's free plan. The security rules in `firestore.rules` let users read and write only their own data; publish them in the Firebase console after changing them.
-
-Titles use [Fraunces](https://github.com/undercasetype/Fraunces) by Undercase Type, with its soft serifs and weight built in, under the SIL Open Font License (`Revora/Resources/Fonts/Fraunces-OFL.txt`).
+---
 
 Copyright © 2026 Patrik Repkovsky. All rights reserved.

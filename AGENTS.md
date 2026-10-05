@@ -2,6 +2,8 @@
 
 A simple iOS/iPadOS recipe app. Users sign up or log in with email and password, save their own recipes (title, ingredients, steps) and mark them as favorites.
 
+This file is the short rule sheet. The details are in [`docs/`](docs/documentation.md): read the page for the area you're changing before you change it.
+
 ## Stack
 
 - SwiftUI, iOS/iPadOS 18+ (deployment target), built with Xcode 27. Guard newer APIs with `#available`.
@@ -31,14 +33,15 @@ The app needs `Revora/GoogleService-Info.plist` to build and run. It is gitignor
 
 ```
 Revora/
-├── App/            App entry point, root view (auth vs. main tabs)
-├── Services/       AuthService, RecipeRepository, RecipePhotoStore (Firebase wrappers), Connectivity
+├── App/            App entry point, root view (auth vs. main tabs), navigation, appearance
+├── Services/       AuthService, RecipeRepository, RecipePhotoStore (Firebase wrappers), Connectivity, error types
 ├── Models/         Recipe, RecipeSection, Ingredient, Step, MealType
 ├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
 ├── Components/     Shared reusable views
-├── Resources/      Fonts (Fraunces Soft, registered in Info.plist's UIAppFonts), the in-app legal texts and open-source licences
+├── Resources/      Fonts, the in-app legal texts and open-source licences
 └── Assets.xcassets
 RevoraTests/        Unit tests (Swift Testing)
+docs/               Developer documentation
 ```
 
 - `Revora/` and `RevoraTests/` are Xcode **synchronized folders**: new files and folders inside them are picked up automatically. Don't edit `project.pbxproj` to add source files.
@@ -46,38 +49,24 @@ RevoraTests/        Unit tests (Swift Testing)
 
 ## Architecture
 
+See [Architecture](docs/architecture.md) and [Data and security](docs/data-and-security.md).
+
 - `@Observable` models and services, injected through the SwiftUI environment.
 - Views don't talk to Firebase directly. They go through `AuthService`, `RecipeRepository` and `RecipePhotoStore`.
-- One `NavigationStack` per tab.
-- Tab bar: native `TabView` with three tabs: Home, Recipes and Account. New recipes are created from a `+` button in the Recipes navigation bar, which opens the recipe editor as a sheet.
-
-### Firestore data
-
-```
-users/{uid}/recipes/{recipeId}
-  title, ingredientSections [{ title?, items [{ name, quantity }] }],
-  stepSections [{ title?, items [{ text, bullets [String] }] }], mealTypes [String],
-  photoID?, isFavorite, createdAt, updatedAt, lastOpenedAt?
-
-users/{uid}/recipes/{recipeId}/photos/{photoID}       data: Bytes (JPEG, ≤ 500 KiB)
-users/{uid}/recipes/{recipeId}/thumbnails/{photoID}   data: Bytes (JPEG, ≤ 100 KiB)
-```
-
-Sections split a recipe into named parts. `title` is missing for the items before the first named section. Step sections are numbered on screen, and their steps start again at 1. Recipes saved before sections have `ingredients [{ name, quantity }]` and `steps [String]` instead: they're read as one untitled section and written in the new shape the next time they're saved.
-
-`mealTypes` holds `MealType` raw values (breakfast, lunch, dinner, snack, dessert, drink) in that order. It's missing on older recipes, and unknown values are skipped when decoding.
-
-Cover photos live in Firestore, not Cloud Storage, so the project stays on the free plan. All photo access goes through `RecipePhotoStore`, so a later move to Cloud Storage only changes that one type. Photos are immutable: a new photo gets a new `photoID`, and the old documents are deleted.
-
-Accounts must confirm their email (Firebase's verification link) before the app opens; until then `AuthService.state` is `.unverified`.
-
-Security rules: users can only read and write their own recipes and photos, and only once their email is confirmed. Photo documents can only be created or deleted, and must hold a single `data` field within the size limit above. The source is `firestore.rules`. It's deployed by hand in the Firebase console, so publish it there after every change.
+- One `NavigationStack` per tab. Native `TabView` with three tabs: Home, Recipes and Account. New recipes open the editor as a sheet.
+- Recipe and photo writes go to Firestore's local cache and aren't awaited, so they work offline. Awaited Firebase calls go through `withTimeout`.
+- Accounts must confirm their email before the app opens (`AuthService.state` is `.unverified` until then), and the security rules require it too.
+- All photo access goes through `RecipePhotoStore`. Photos live in Firestore and never change: a new photo gets a new `photoID`.
+- The Firestore shape is in [Data and security](docs/data-and-security.md#firestore-layout). Keep older recipes decoding when you change it, and cover both shapes in `RecipeCodingTests`.
+- The security rules are in `firestore.rules`. They're deployed by hand in the Firebase console, so after every change, say that they need publishing there.
 
 ## Conventions
 
 - Match the existing code style. Keep comments sparse; explain *why*, not *what*.
 - Use Swift concurrency (`async/await`) rather than completion handlers where Firebase offers both.
 - Show user-facing errors as friendly messages, not raw Firebase errors.
+- Destructive actions always ask first and say they can't be undone, swipe actions too.
+- Use the app's color sets (`.secondaryText`, not `.secondary`) and `Font.display` for titles. See [Design](docs/design.md).
 - Unit test logic that doesn't need the network (validation, error mapping, model coding, sorting/filtering) with Swift Testing. Tests never call real Firebase.
 - Don't use `@unchecked Sendable` or `nonisolated(unsafe)` to silence concurrency errors without explaining why it's safe.
 
@@ -85,5 +74,6 @@ Security rules: users can only read and write their own recipes and photos, and 
 
 - Work in small stages. Build after each change and make sure there are no new warnings.
 - If a requirement is unclear, ask before starting.
+- When behavior changes, update the matching page in `docs/` and Help's answers (`HelpTopic.all`) in the same change.
 - Commit or push only when asked.
 - For commit messages, use the `commit-message` skill if it's available, unless told otherwise. Without it: short imperative subject, blank line, brief body.
