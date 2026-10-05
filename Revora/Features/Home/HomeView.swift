@@ -185,7 +185,7 @@ struct HomeView: View {
                 .font(.subheadline)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(16)
-                .background(.surface, in: .rect(cornerRadius: 18))
+                .background(.surface.cardShadow(), in: .rect(cornerRadius: 18))
             } else {
                 recipeRow(recipes)
             }
@@ -239,6 +239,9 @@ struct HomeView: View {
         // Runs to the screen's edges, so it's clear the row scrolls.
         .contentMargins(.horizontal, margin, for: .scrollContent)
         .padding(.horizontal, -margin)
+        // Room for the cards' shadows, which the scroll view would otherwise cut off.
+        .contentMargins(.vertical, 8, for: .scrollContent)
+        .padding(.vertical, -8)
     }
 
     private var welcome: some View {
@@ -265,7 +268,7 @@ struct HomeView: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity)
-        .background(.surface, in: .rect(cornerRadius: 24))
+        .background(.surface.cardShadow(), in: .rect(cornerRadius: 24))
     }
 
     private func section(

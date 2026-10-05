@@ -50,8 +50,9 @@ struct ContinueCookingCard: View {
             .padding(16)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.surface)
         .clipShape(.rect(cornerRadius: 24))
+        // Behind the clipped content, so the clip doesn't cut the shadow off.
+        .background(.surface.cardShadow(), in: .rect(cornerRadius: 24))
         .contentShape(.rect(cornerRadius: 24))
     }
 }
@@ -72,8 +73,8 @@ struct RecipeCard: View {
         VStack(alignment: .leading, spacing: 8) {
             RecipePhotoView(recipe: recipe, size: .thumbnail)
                 .frame(width: width, height: width)
-                .background(.surface)
                 .clipShape(.rect(cornerRadius: 18))
+                .background(.surface.cardShadow(), in: .rect(cornerRadius: 18))
 
             Text(recipe.title)
                 .font(.display(.headline))
@@ -131,7 +132,7 @@ struct HomeActionTile: View {
         .foregroundStyle(isProminent ? AnyShapeStyle(.accentForeground) : AnyShapeStyle(.primary))
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isWide ? .leading : .topLeading)
         .padding(16)
-        .background(isProminent ? AnyShapeStyle(.tint) : AnyShapeStyle(.surface), in: .rect(cornerRadius: 22))
+        .background((isProminent ? AnyShapeStyle(.tint) : AnyShapeStyle(.surface)).cardShadow(), in: .rect(cornerRadius: 22))
         .contentShape(.rect(cornerRadius: 22))
     }
 }
@@ -174,7 +175,7 @@ struct MealTile: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .background(.surface, in: .rect(cornerRadius: 18))
+        .background(.surface.cardShadow(), in: .rect(cornerRadius: 18))
         .contentShape(.rect(cornerRadius: 18))
     }
 }
@@ -193,6 +194,15 @@ struct CardButtonStyle: ButtonStyle {
 
 extension ButtonStyle where Self == CardButtonStyle {
     static var card: CardButtonStyle { CardButtonStyle() }
+}
+
+extension ShapeStyle {
+    /// A soft shadow for a card's background. White cards on the cream background have
+    /// barely any edge without it. It's clear in dark mode, where cards are lighter instead.
+    /// On the background rather than the card, so the text doesn't get a shadow too.
+    func cardShadow() -> some ShapeStyle {
+        shadow(.drop(color: .cardShadow, radius: 8, y: 2))
+    }
 }
 
 #Preview {
