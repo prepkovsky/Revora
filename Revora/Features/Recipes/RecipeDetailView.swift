@@ -18,7 +18,11 @@ struct RecipeDetailView: View {
     /// Where the big title ends, and where the navigation bar ends, both in the scroll view.
     @State private var titleBottom = Double.infinity
     @State private var barBottom = 0.0
+    @State private var listWidth = 0.0
     @ScaledMetric private var quantityWidth = 90.0
+
+    /// Like Home's: rows stretched across a whole iPad are hard to read, and the photo would be enormous.
+    private let maxContentWidth = 700.0
 
     /// At accessibility text sizes an amount column leaves the name too little room.
     private var stacksIngredients: Bool {
@@ -95,10 +99,16 @@ struct RecipeDetailView: View {
             }
             Text(ingredient.name)
         }
+        // One stop per ingredient: "200 g, Flour".
+        .accessibilityElement(children: .combine)
     }
 
     private func stepRow(_ step: Step, number: Int) -> some View {
-        HStack(alignment: .firstTextBaseline) {
+        // At accessibility text sizes the number goes above the step, which needs the whole width.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+        return layout {
             Text("\(number).")
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
@@ -215,6 +225,12 @@ struct RecipeDetailView: View {
             .listRowBackground(Color.surface)
         }
         .scrollContentBackground(.hidden)
+        .contentMargins(
+            .horizontal,
+            listWidth > maxContentWidth ? (listWidth - maxContentWidth) / 2 : nil,
+            for: .scrollContent
+        )
+        .onGeometryChange(for: Double.self) { $0.size.width } action: { listWidth = $0 }
         .sheet(isPresented: $isEditing) {
             RecipeEditorView(recipe: recipe)
         }

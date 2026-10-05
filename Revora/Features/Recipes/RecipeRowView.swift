@@ -4,29 +4,59 @@ import SwiftUI
 struct RecipeRowView: View {
     let recipe: Recipe
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(spacing: 12) {
-            RecipePhotoView(recipe: recipe, size: .thumbnail)
-                .frame(width: 56, height: 56)
-                .clipShape(.rect(cornerRadius: 10))
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(recipe.title)
-                    .font(.headline)
-                summary
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            if recipe.isFavorite {
-                Spacer()
-                Image(systemName: "heart.fill")
-                    .font(.subheadline)
-                    .foregroundStyle(.tint)
-                    .accessibilityLabel("Favorite")
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                // The text needs the whole width, so the photo and heart go above it.
+                VStack(alignment: .leading, spacing: 8) {
+                    thumbnail
+                    details
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                // An overlay, so VoiceOver still reads the title first.
+                .overlay(alignment: .topTrailing) {
+                    favoriteMark
+                        .frame(height: 56)
+                }
+            } else {
+                HStack(spacing: 12) {
+                    thumbnail
+                    details
+                    if recipe.isFavorite {
+                        Spacer()
+                        favoriteMark
+                    }
+                }
             }
         }
         .padding(.vertical, 2)
+    }
+
+    private var thumbnail: some View {
+        RecipePhotoView(recipe: recipe, size: .thumbnail)
+            .frame(width: 56, height: 56)
+            .clipShape(.rect(cornerRadius: 10))
+    }
+
+    private var details: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(recipe.title)
+                .font(.headline)
+            summary
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder private var favoriteMark: some View {
+        if recipe.isFavorite {
+            Image(systemName: "heart.fill")
+                .font(.subheadline)
+                .foregroundStyle(.tint)
+                .accessibilityLabel("Favorite")
+        }
     }
 
     @ViewBuilder private var summary: some View {

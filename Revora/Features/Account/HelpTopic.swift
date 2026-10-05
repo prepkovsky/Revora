@@ -35,7 +35,7 @@ nonisolated struct HelpTopic: Identifiable, Sendable {
             ),
             Question(
                 question: "How do I move or remove ingredients and steps?",
-                answer: "In the editor, drag a row by the handle on its right, even into another section. To remove one, tap the red minus button next to it."
+                answer: "In the editor, drag a row by the handle on its right, even into another section. To remove one, tap the red minus button next to it. With VoiceOver, swipe up or down on a row to move or delete it."
             ),
             Question(
                 question: "How do I add a photo?",

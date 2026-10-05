@@ -21,28 +21,37 @@ struct PasswordField: View {
             // Both fields stay in place so showing the password hands focus from one to the
             // other. Swapping them out, or disabling the focused one, would dismiss the keyboard.
             ZStack {
+                // VoiceOver reads the title only while the field is empty, as its placeholder.
                 SecureField(title, text: $text)
+                    .accessibilityLabel(title)
                     .focused($focusedInput, equals: .secure)
                     .hiddenInput(isRevealed)
 
                 TextField(title, text: $text)
+                    .accessibilityLabel(title)
                     .focused($focusedInput, equals: .plain)
                     .hiddenInput(!isRevealed)
             }
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
 
-            Button(
-                isRevealed ? "Hide Password" : "Show Password",
-                systemImage: isRevealed ? "eye.slash" : "eye"
-            ) {
+            Button {
                 isRevealed.toggle()
                 guard focusedInput != nil else { return }
                 // iOS clears a secure field on the first keystroke after it gains focus, so
                 // continuing to type after hiding would erase the password. End editing instead.
                 focusedInput = isRevealed ? .plain : nil
+            } label: {
+                Label(isRevealed ? "Hide Password" : "Show Password", systemImage: isRevealed ? "eye.slash" : "eye")
+                    .labelStyle(.iconOnly)
+                    .padding(.vertical, 13)
+                    .padding(.horizontal, 8)
+                    .contentShape(.rect)
             }
-            .labelStyle(.iconOnly)
+            // A full-size target around the small icon, without making the field taller.
+            // Only as wide as the gap, so taps at the end of the text still reach the field.
+            .padding(.vertical, -13)
+            .padding(.horizontal, -8)
             .foregroundStyle(.secondary)
         }
         .onChange(of: focusedInput) {

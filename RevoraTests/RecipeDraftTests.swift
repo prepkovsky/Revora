@@ -296,6 +296,13 @@ struct RecipeDraftTests {
         #expect(draft.hasChanges(from: original))
     }
 
+    @Test func ingredientLineBreaksAreRemoved() {
+        var ingredient = RecipeDraft.IngredientRow(name: "Ice-cold\nwater\n")
+        let removed = ingredient.removeLineBreaks()
+        #expect(removed)
+        #expect(ingredient.name == "Ice-cold water")
+    }
+
     @Test func bulletPointLineBreaksAreRemoved() {
         var bullet = RecipeDraft.BulletRow(text: "flour\n")
         let removed = bullet.removeLineBreaks()

@@ -3,6 +3,7 @@ import SwiftUI
 /// A text input with its label above it and a hint or error below it.
 /// The label stays visible, unlike placeholder text, which disappears as people type.
 /// The input should carry the same label for VoiceOver, so the visible one is hidden from it.
+/// A text field with a prompt needs it as an `accessibilityLabel`: VoiceOver doesn't read its title.
 struct FormField<Field: Hashable, Input: View>: View {
     let label: String
     var hint: String?
@@ -63,7 +64,8 @@ struct FormField<Field: Hashable, Input: View>: View {
             focus: $focusedField,
             field: 0
         ) {
-            TextField("Email", text: .constant("name@"), prompt: Text("name@example.com"))
+            TextField("Email", text: .constant("name@"), prompt: Text(verbatim: "name@example.com"))
+                .accessibilityLabel("Email")
         }
         FormField(label: "Password", hint: "Use at least 8 characters.", focus: $focusedField, field: 1) {
             PasswordField(title: "Password", text: .constant(""))

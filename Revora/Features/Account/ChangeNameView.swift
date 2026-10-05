@@ -41,6 +41,7 @@ struct ChangeNameView: View {
                     field: .name
                 ) {
                     TextField("Name", text: $name, prompt: Text("Your name"))
+                        .accessibilityLabel("Name")
                         .textContentType(.name)
                         .textInputAutocapitalization(.words)
                         .autocorrectionDisabled()

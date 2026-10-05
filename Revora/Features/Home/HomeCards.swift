@@ -6,6 +6,7 @@ struct ContinueCookingCard: View {
     /// Passed in, so "Opened 5 minutes ago" keeps up while Home stays open.
     var now = Date.now
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .headline) private var arrowSize = 40.0
 
     var body: some View {
@@ -18,7 +19,7 @@ struct ContinueCookingCard: View {
                     Text(recipe.title)
                         .font(.display(.title2))
                         .foregroundStyle(.primary)
-                        .lineLimit(2)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                     if let openedAt = recipe.lastOpenedAt {
                         Group {
                             // Otherwise it reads "Opened now", straight after coming back from the recipe.
@@ -36,12 +37,15 @@ struct ContinueCookingCard: View {
 
                 Spacer(minLength: 0)
 
-                Image(systemName: "arrow.right")
-                    .font(.headline)
-                    .foregroundStyle(.accentForeground)
-                    .frame(width: arrowSize, height: arrowSize)
-                    .background(.tint, in: .circle)
-                    .accessibilityHidden(true)
+                // Only a hint that the card opens. At accessibility text sizes the text needs its room.
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Image(systemName: "arrow.right")
+                        .font(.headline)
+                        .foregroundStyle(.accentForeground)
+                        .frame(width: arrowSize, height: arrowSize)
+                        .background(.tint, in: .circle)
+                        .accessibilityHidden(true)
+                }
             }
             .padding(16)
         }
@@ -56,7 +60,13 @@ struct ContinueCookingCard: View {
 struct RecipeCard: View {
     let recipe: Recipe
 
-    @ScaledMetric(relativeTo: .headline) private var width = 150.0
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .headline) private var scaledWidth = 150.0
+
+    /// Grows with the text, but not so far that the next card stops peeking in.
+    private var width: Double {
+        min(scaledWidth, 260)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -69,7 +79,8 @@ struct RecipeCard: View {
                 .font(.display(.headline))
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.leading)
-                .lineLimit(2, reservesSpace: true)
+                // Titles line up at regular sizes. At accessibility sizes two lines hold too little.
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 5 : 2, reservesSpace: !dynamicTypeSize.isAccessibilitySize)
         }
         .frame(width: width, alignment: .leading)
         .contentShape(.rect)
@@ -130,10 +141,15 @@ struct MealTile: View {
     let mealType: MealType
     let count: Int
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .headline) private var iconSize = 40.0
 
     var body: some View {
-        HStack(spacing: 12) {
+        // At accessibility text sizes the name needs the whole width.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            : AnyLayout(HStackLayout(spacing: 12))
+        layout {
             Image(systemName: mealType.systemImage)
                 .font(.headline)
                 .foregroundStyle(.secondaryAccent)
@@ -155,8 +171,6 @@ struct MealTile: View {
                 .foregroundStyle(.secondary)
             }
             .multilineTextAlignment(.leading)
-
-            Spacer(minLength: 0)
         }
         .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)

@@ -65,7 +65,8 @@ struct ChangeEmailView: View {
                 focus: $focusedField,
                 field: .newEmail
             ) {
-                TextField("New Email", text: $form.newEmail, prompt: Text("name@example.com"))
+                TextField("New Email", text: $form.newEmail, prompt: Text(verbatim: "name@example.com"))
+                    .accessibilityLabel("New Email")
                     .keyboardType(.emailAddress)
                     .textContentType(.emailAddress)
                     .textInputAutocapitalization(.never)

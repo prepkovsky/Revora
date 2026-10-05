@@ -8,8 +8,14 @@ struct RecipeRowSkeleton: View {
 
     private static let titles = ["Lemon herb chicken", "Banana bread", "Roasted tomato soup", "Pancakes", "Spinach and feta pie"]
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(spacing: 12) {
+        // Laid out like the row: the photo goes above the text at accessibility text sizes.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            : AnyLayout(HStackLayout(spacing: 12))
+        layout {
             RoundedRectangle(cornerRadius: 10)
                 .fill(.fill)
                 .frame(width: 56, height: 56)

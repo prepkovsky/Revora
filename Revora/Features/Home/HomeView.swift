@@ -276,14 +276,28 @@ struct HomeView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                HStack(alignment: .firstTextBaseline) {
+                // At accessibility text sizes the title needs the whole width, so See All goes under it.
+                let header = dynamicTypeSize.isAccessibilitySize
+                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+                    : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+                header {
                     Text(title)
                         .font(.display(.title2))
                         .accessibilityAddTraits(.isHeader)
-                    Spacer()
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     if let seeAll {
-                        Button("See All", action: seeAll)
-                            .font(.subheadline.weight(.semibold))
+                        Button(action: seeAll) {
+                            Text("See All")
+                                .padding(.vertical, 13)
+                                .padding(.horizontal, 12)
+                                .contentShape(.rect)
+                        }
+                        // A full-size target around the short text, without moving it.
+                        .padding(.vertical, -13)
+                        .padding(.horizontal, -12)
+                        .font(.subheadline.weight(.semibold))
+                        // VoiceOver's list of buttons would otherwise hold several plain "See All".
+                        .accessibilityLabel("See All \(String(localized: title))")
                     }
                 }
                 if let subtitle {

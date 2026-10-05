@@ -17,6 +17,7 @@ struct ConfirmationMessage: View {
 
             Text(title)
                 .font(.display(.title2))
+                .accessibilityAddTraits(.isHeader)
 
             message
                 .multilineTextAlignment(.center)

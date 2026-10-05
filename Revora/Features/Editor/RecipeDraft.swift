@@ -17,6 +17,11 @@ struct RecipeDraft: Equatable {
         var isBlank: Bool {
             trimmed(quantity).isEmpty && trimmed(name).isEmpty
         }
+
+        /// Like a step, Return moves on to the next row instead of starting a new line.
+        mutating func removeLineBreaks() -> Bool {
+            name.removeLineBreaks()
+        }
     }
 
     /// A step being edited, or the name of the section that the steps below it belong to.
@@ -34,7 +39,7 @@ struct RecipeDraft: Equatable {
         /// Each step is one paragraph, so Return moves on instead of starting a new line.
         /// Returns whether there was a line break to remove.
         mutating func removeLineBreaks() -> Bool {
-            stripLineBreaks(from: &text)
+            text.removeLineBreaks()
         }
     }
 
@@ -49,7 +54,7 @@ struct RecipeDraft: Equatable {
 
         /// Like a step, Return moves on to the next bullet point instead of starting a new line.
         mutating func removeLineBreaks() -> Bool {
-            stripLineBreaks(from: &text)
+            text.removeLineBreaks()
         }
     }
 
@@ -197,10 +202,13 @@ private func rows<Item: Codable & Hashable & Sendable, Row>(
     }
 }
 
-private func stripLineBreaks(from text: inout String) -> Bool {
-    guard text.contains(where: \.isNewline) else { return false }
-    text = text.split(whereSeparator: \.isNewline).joined(separator: " ")
-    return true
+extension String {
+    /// Joins the lines with spaces. Returns whether there was a line break to remove.
+    mutating func removeLineBreaks() -> Bool {
+        guard contains(where: \.isNewline) else { return false }
+        self = split(whereSeparator: \.isNewline).joined(separator: " ")
+        return true
+    }
 }
 
 private func trimmed(_ text: String) -> String {

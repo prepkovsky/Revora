@@ -29,6 +29,7 @@ struct RegisterView: View {
                     field: .name
                 ) {
                     TextField("Name", text: $form.name, prompt: Text("Your name"))
+                        .accessibilityLabel("Name")
                         .textContentType(.name)
                         .textInputAutocapitalization(.words)
                         .autocorrectionDisabled()
@@ -43,7 +44,8 @@ struct RegisterView: View {
                     focus: $focusedField,
                     field: .email
                 ) {
-                    TextField("Email", text: $form.email, prompt: Text("name@example.com"))
+                    TextField("Email", text: $form.email, prompt: Text(verbatim: "name@example.com"))
+                        .accessibilityLabel("Email")
                         .keyboardType(.emailAddress)
                         .textContentType(.emailAddress)
                         .textInputAutocapitalization(.never)

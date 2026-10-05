@@ -69,7 +69,8 @@ struct ResetPasswordView: View {
                 .foregroundStyle(.secondary)
 
             FormField(label: "Email", error: emailError, focus: $focusedField, field: .email) {
-                TextField("Email", text: $email, prompt: Text("name@example.com"))
+                TextField("Email", text: $email, prompt: Text(verbatim: "name@example.com"))
+                    .accessibilityLabel("Email")
                     .keyboardType(.emailAddress)
                     .textContentType(.username)
                     .textInputAutocapitalization(.never)

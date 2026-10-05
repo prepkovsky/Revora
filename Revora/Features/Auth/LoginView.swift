@@ -24,7 +24,8 @@ struct LoginView: View {
                 }
 
                 FormField(label: "Email", error: error(for: .email), focus: $focusedField, field: .email) {
-                    TextField("Email", text: $form.email, prompt: Text("name@example.com"))
+                    TextField("Email", text: $form.email, prompt: Text(verbatim: "name@example.com"))
+                        .accessibilityLabel("Email")
                         .keyboardType(.emailAddress)
                         .textContentType(.username)
                         .textInputAutocapitalization(.never)

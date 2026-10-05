@@ -26,6 +26,7 @@ struct VerifyEmailView: View {
 
                 Text("Confirm Your Email")
                     .font(.display(.title2))
+                    .accessibilityAddTraits(.isHeader)
 
                 Group {
                     if authService.isVerificationSent {

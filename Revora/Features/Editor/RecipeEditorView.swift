@@ -63,6 +63,8 @@ struct RecipeEditorView: View {
 
                 Section("Title") {
                     TextField("Title", text: $draft.title, prompt: Text("e.g. Banana Bread"))
+                        // With a prompt, the field's own title doesn't reach VoiceOver.
+                        .accessibilityLabel("Title")
                         .focused($focusedField, equals: .title)
                         .submitLabel(.next)
                         .onSubmit(focusFirstIngredient)
@@ -93,10 +95,15 @@ struct RecipeEditorView: View {
 
                 Section("Ingredients") {
                     ForEach($draft.ingredients) { $row in
-                        if row.isSection {
-                            sectionField($row.name, id: row.id) { focusIngredient(afterSection: row) }
-                        } else {
-                            ingredientFields($row)
+                        Group {
+                            if row.isSection {
+                                sectionField($row.name, id: row.id) { focusIngredient(afterSection: row) }
+                            } else {
+                                ingredientFields($row)
+                            }
+                        }
+                        .accessibilityActions {
+                            rowActions(\.ingredients, id: row.id, delete: row.isSection ? "Delete Section" : "Delete Ingredient")
                         }
                     }
                     .onDelete { draft.ingredients.remove(atOffsets: $0) }
@@ -112,11 +119,16 @@ struct RecipeEditorView: View {
                     let sectionedSteps = Set(draft.steps.drop { !$0.isSection }.map(\.id))
                     ForEach($draft.steps) { $row in
                         let number = numbers[row.id] ?? 0
-                        if row.isSection {
-                            sectionField($row.text, id: row.id, number: number) { focusStep(afterSection: row) }
-                        } else {
-                            stepFields($row, number: number)
-                                .padding(.leading, sectionedSteps.contains(row.id) ? sectionIndent : 0)
+                        Group {
+                            if row.isSection {
+                                sectionField($row.text, id: row.id, number: number) { focusStep(afterSection: row) }
+                            } else {
+                                stepFields($row, number: number)
+                                    .padding(.leading, sectionedSteps.contains(row.id) ? sectionIndent : 0)
+                            }
+                        }
+                        .accessibilityActions {
+                            rowActions(\.steps, id: row.id, delete: row.isSection ? "Delete Section" : "Delete Step")
                         }
                     }
                     .onDelete { draft.steps.remove(atOffsets: $0) }
@@ -179,6 +191,8 @@ struct RecipeEditorView: View {
         }
         // Swiping down would skip the discard confirmation.
         .interactiveDismissDisabled(hasChanges)
+        // On iPad a form sheet would show little more than the photo.
+        .presentationSizing(.page)
     }
 
     /// A section's name in either list. Step sections show their number.
@@ -190,35 +204,52 @@ struct RecipeEditorView: View {
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
             }
-            TextField(text: name, prompt: Text("Section name")) {
+            // Wraps, like the steps, so long names aren't cut off at large text sizes.
+            TextField(text: name, prompt: Text("Section name"), axis: .vertical) {
                 if let number {
                     Text("Section \(number)")
                 } else {
                     Text("Section")
                 }
             }
+            .accessibilityLabel(number.map { "Section \($0)" } ?? "Section")
             .focused($focusedField, equals: .section(id))
             .submitLabel(.next)
             .onSubmit(onSubmit)
+            // Return can arrive as a line break, as in a step.
+            .onChange(of: name.wrappedValue) {
+                if name.wrappedValue.removeLineBreaks() {
+                    onSubmit()
+                }
+            }
         }
         .font(.headline)
     }
 
     private func ingredientFields(_ row: Binding<IngredientRow>) -> some View {
         let id = row.wrappedValue.id
+        let name = row.wrappedValue.name.trimmingCharacters(in: .whitespaces)
         let layout = stacksIngredientFields ? AnyLayout(VStackLayout()) : AnyLayout(HStackLayout())
         return layout {
             TextField("Amount", text: row.quantity, prompt: Text("Amount"))
+                // The row's reorder handle takes this label too, so it says which ingredient it moves.
+                .accessibilityLabel(name.isEmpty ? "Amount" : "Amount of \(name)")
                 .autocorrectionDisabled()
                 .frame(width: stacksIngredientFields ? nil : quantityWidth)
                 .focused($focusedField, equals: .quantity(id))
                 .submitLabel(.next)
                 .onSubmit { focusedField = .name(id) }
             Divider()
-            TextField("Ingredient", text: row.name, prompt: Text("Ingredient"))
+            TextField("Ingredient", text: row.name, prompt: Text("Ingredient"), axis: .vertical)
+                .accessibilityLabel("Ingredient")
                 .focused($focusedField, equals: .name(id))
                 .submitLabel(.next)
                 .onSubmit { focusIngredient(after: row.wrappedValue) }
+                .onChange(of: row.wrappedValue.name) {
+                    if row.wrappedValue.removeLineBreaks() {
+                        focusIngredient(after: row.wrappedValue)
+                    }
+                }
         }
     }
 
@@ -233,6 +264,7 @@ struct RecipeEditorView: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 10) {
                 TextField("Step \(number)", text: step.text, prompt: Text("Describe this step"), axis: .vertical)
+                    .accessibilityLabel("Step \(number)")
                     .focused($focusedField, equals: .step(id))
                     .submitLabel(.next)
                     .onSubmit { focusStep(afterText: step.wrappedValue) }
@@ -250,6 +282,7 @@ struct RecipeEditorView: View {
                             .foregroundStyle(.secondary)
                             .accessibilityHidden(true)
                         TextField("Bullet point", text: $bullet.text, prompt: Text("Bullet point"), axis: .vertical)
+                            .accessibilityLabel("Bullet point")
                             .focused($focusedField, equals: .bullet(bullet.id, step: id))
                             .submitLabel(.next)
                             .onSubmit { focusBullet(after: bullet, inStep: id) }
@@ -262,6 +295,37 @@ struct RecipeEditorView: View {
                 }
             }
         }
+    }
+
+    // MARK: VoiceOver
+
+    /// VoiceOver can't reach a row's delete button, and dragging its handle is awkward,
+    /// so the row's fields offer the same as actions.
+    @ViewBuilder
+    private func rowActions<Row: Identifiable>(
+        _ rows: WritableKeyPath<RecipeDraft, [Row]>,
+        id: Row.ID,
+        delete title: LocalizedStringResource
+    ) -> some View {
+        let index = draft[keyPath: rows].firstIndex { $0.id == id }
+        // VoiceOver offers these last to first: Move Up, Move Down, then Delete.
+        Button(title) {
+            focusedField = nil
+            removeAfterFocusMoves { $0[keyPath: rows].removeAll { $0.id == id } }
+        }
+        if let index, index < draft[keyPath: rows].count - 1 {
+            Button("Move Down") { moveRow(rows, id: id, by: 1) }
+        }
+        if let index, index > 0 {
+            Button("Move Up") { moveRow(rows, id: id, by: -1) }
+        }
+    }
+
+    /// One place at a time, past section names too, like dragging the row.
+    private func moveRow<Row: Identifiable>(_ rows: WritableKeyPath<RecipeDraft, [Row]>, id: Row.ID, by offset: Int) {
+        guard let index = draft[keyPath: rows].firstIndex(where: { $0.id == id }),
+              draft[keyPath: rows].indices.contains(index + offset) else { return }
+        draft[keyPath: rows].swapAt(index, index + offset)
     }
 
     // MARK: Ingredients
