@@ -54,9 +54,12 @@ final class AuthService {
     /// so Login can say why and fill it in. Cleared on the next sign-in.
     private(set) var changedEmail: String?
 
-    /// Whether a confirmation link went out this session, so the screen doesn't claim
-    /// one was sent to accounts made before confirming was required.
+    /// Whether a confirmation link has gone out to the signed-in account, so the screen doesn't
+    /// claim one was sent to accounts made before confirming was required. Kept across launches,
+    /// so reopening the app doesn't offer a link that's already on its way.
     private(set) var isVerificationSent = false
+
+    private let sentVerifications = SentVerifications()
 
     var currentUser: AuthUser? {
         guard case .signedIn(let user) = state else { return nil }
@@ -75,9 +78,8 @@ final class AuthService {
                 changedEmail = nil
             } else {
                 pendingEmail = nil
-                isVerificationSent = false
             }
-            state = Self.state(for: user)
+            update(for: user)
         }
     }
 
@@ -140,6 +142,7 @@ final class AuthService {
         guard let user = Auth.auth().currentUser else { throw .unknown }
         do {
             try await user.sendEmailVerification()
+            sentVerifications.insert(user.uid)
             isVerificationSent = true
             Self.logger.info("Email confirmation sent")
         } catch {
@@ -249,11 +252,15 @@ final class AuthService {
         if let pendingEmail, user.email?.caseInsensitiveCompare(pendingEmail) == .orderedSame {
             self.pendingEmail = nil
         }
-        state = Self.state(for: user)
+        update(for: user)
     }
 
-    private static func state(for user: User?) -> State {
-        State(user: user.map(authUser(from:)), isEmailVerified: user?.isEmailVerified ?? false)
+    private func update(for user: User?) {
+        if let user, user.isEmailVerified {
+            sentVerifications.remove(user.uid)
+        }
+        isVerificationSent = user.map { sentVerifications.contains($0.uid) } ?? false
+        state = State(user: user.map(Self.authUser(from:)), isEmailVerified: user?.isEmailVerified ?? false)
     }
 
     private static func authUser(from user: User) -> AuthUser {
@@ -263,7 +270,6 @@ final class AuthService {
 
     func logOut() throws(AuthError) {
         pendingEmail = nil
-        isVerificationSent = false
         do {
             try Auth.auth().signOut()
         } catch {
