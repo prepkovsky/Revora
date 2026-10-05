@@ -44,10 +44,6 @@ Read the full Privacy Policy in the app, under Account → Legal.
 - An iPhone or iPad with iOS or iPadOS 18 or later
 - An email address, to create your account
 
-## Get Revora
-
-Revora is coming soon to the App Store.
-
 ## For developers
 
 How Revora is built, and how to set it up and run it, is in the [developer documentation](docs/documentation.md).
