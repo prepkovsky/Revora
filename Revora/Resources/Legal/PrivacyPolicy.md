@@ -1,4 +1,4 @@
-*Last updated: October 3, 2026*
+*Last updated: October 5, 2026*
 
 Revora is a place to keep your own recipes. This policy explains what the app stores, why, and what you can do about it.
 
@@ -23,7 +23,7 @@ Only to run the app: to sign you in, to save your recipes and photos and sync th
 
 Your account, recipes and photos are stored with Google Firebase (Firebase Authentication and Cloud Firestore), a service run by Google LLC that processes the data on Revora's behalf. It may be stored on servers outside your country. Data is encrypted on its way to Firebase and while it's stored there.
 
-Revora also keeps a copy of your recipes on your device so it works offline, and saves your appearance setting there. Deleting the app removes them.
+Revora also keeps a copy of your recipes on your device so it works offline. It saves your appearance setting there too, and when it last sent you an email link, so it can wait a moment before sending another. Deleting the app removes them.
 
 ## How long it's kept
 
