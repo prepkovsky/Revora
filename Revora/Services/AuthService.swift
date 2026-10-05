@@ -87,7 +87,7 @@ final class AuthService {
     /// An empty name is skipped.
     func register(name: String, email: String, password: String) async throws(AuthError) {
         do {
-            _ = try await Auth.auth().createUser(withEmail: email, password: password)
+            try await withTimeout { _ = try await Auth.auth().createUser(withEmail: email, password: password) }
         } catch {
             Self.logger.error("Registration failed: \(error)")
             throw AuthError(error)
@@ -113,7 +113,7 @@ final class AuthService {
         let request = user.createProfileChangeRequest()
         request.displayName = name.isEmpty ? nil : name
         do {
-            try await request.commitChanges()
+            try await withTimeout { try await request.commitChanges() }
         } catch {
             Self.logger.error("Updating the name failed: \(error)")
             throw AuthError(error)
@@ -128,7 +128,7 @@ final class AuthService {
         try await reauthenticate(password: password)
         guard let user = Auth.auth().currentUser else { throw .unknown }
         do {
-            try await user.sendEmailVerification(beforeUpdatingEmail: newEmail)
+            try await withTimeout { try await user.sendEmailVerification(beforeUpdatingEmail: newEmail) }
             pendingEmail = newEmail
             Self.logger.info("Email change requested")
         } catch {
@@ -141,7 +141,7 @@ final class AuthService {
     func sendEmailVerification() async throws(AuthError) {
         guard let user = Auth.auth().currentUser else { throw .unknown }
         do {
-            try await user.sendEmailVerification()
+            try await withTimeout { try await user.sendEmailVerification() }
             sentVerifications.insert(user.uid)
             isVerificationSent = true
             Self.logger.info("Email confirmation sent")
@@ -185,7 +185,7 @@ final class AuthService {
 
     func logIn(email: String, password: String) async throws(AuthError) {
         do {
-            _ = try await Auth.auth().signIn(withEmail: email, password: password)
+            try await withTimeout { _ = try await Auth.auth().signIn(withEmail: email, password: password) }
         } catch {
             Self.logger.error("Log in failed: \(error)")
             throw AuthError(error)
@@ -196,7 +196,7 @@ final class AuthService {
     /// so the screen can't be used to find out which emails have accounts.
     func sendPasswordReset(email: String) async throws(AuthError) {
         do {
-            try await Auth.auth().sendPasswordReset(withEmail: email)
+            try await withTimeout { try await Auth.auth().sendPasswordReset(withEmail: email) }
             Self.logger.info("Password reset requested")
         } catch let error as NSError
             where error.domain == AuthErrors.domain && error.code == AuthErrorCode.userNotFound.rawValue {
@@ -212,7 +212,9 @@ final class AuthService {
     func reauthenticate(password: String) async throws(AuthError) {
         guard let user = Auth.auth().currentUser, let email = user.email else { throw .unknown }
         do {
-            _ = try await user.reauthenticate(with: EmailAuthProvider.credential(withEmail: email, password: password))
+            try await withTimeout {
+                _ = try await user.reauthenticate(with: EmailAuthProvider.credential(withEmail: email, password: password))
+            }
         } catch {
             Self.logger.error("Re-authentication failed: \(error)")
             throw AuthError(reauthenticating: error)
@@ -225,7 +227,7 @@ final class AuthService {
         try await reauthenticate(password: currentPassword)
         guard let user = Auth.auth().currentUser else { throw .unknown }
         do {
-            try await user.updatePassword(to: newPassword)
+            try await withTimeout { try await user.updatePassword(to: newPassword) }
             Self.logger.info("Password changed")
         } catch {
             Self.logger.error("Changing the password failed: \(error)")
@@ -238,7 +240,7 @@ final class AuthService {
         guard let user = Auth.auth().currentUser else { throw .unknown }
         pendingEmail = nil
         do {
-            try await user.delete()
+            try await withTimeout { try await user.delete() }
             Self.logger.info("Account deleted")
         } catch {
             Self.logger.error("Deleting the account failed: \(error)")

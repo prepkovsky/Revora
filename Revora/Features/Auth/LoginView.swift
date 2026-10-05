@@ -117,7 +117,7 @@ struct LoginView: View {
     private func field(for error: AuthError) -> Field? {
         switch error {
         case .invalidEmail: .email
-        case .emailAlreadyInUse, .weakPassword, .wrongCredentials, .wrongPassword, .network, .tooManyRequests, .unknown: nil
+        case .emailAlreadyInUse, .weakPassword, .wrongCredentials, .wrongPassword, .network, .timedOut, .tooManyRequests, .unknown: nil
         }
     }
 

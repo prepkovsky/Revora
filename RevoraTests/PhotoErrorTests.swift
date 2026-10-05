@@ -16,6 +16,10 @@ struct PhotoErrorTests {
         #expect(PhotoError(NSError(domain: FirestoreErrorDomain, code: code.rawValue)) == expected)
     }
 
+    @Test func mapsTimeouts() {
+        #expect(PhotoError(TimeoutError()) == .timedOut)
+    }
+
     @Test func treatsOtherDomainsAsUnknown() {
         let error = NSError(domain: NSURLErrorDomain, code: FirestoreErrorCode.Code.unavailable.rawValue)
         #expect(PhotoError(error) == .unknown)

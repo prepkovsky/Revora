@@ -8,6 +8,8 @@ struct HomeView: View {
 
     @State private var isShowingEditor = false
     @State private var surpriseRecipe: Recipe?
+    /// Like a spinner, the skeleton waits a moment, so a quick load doesn't flash it.
+    @State private var isSkeletonVisible = false
 
     /// Where the greeting ends, measured from the bottom of the navigation bar.
     @State private var greetingBottom = Double.infinity
@@ -29,6 +31,8 @@ struct HomeView: View {
                     header(greeting, date: context.date)
                     content(now: context.date)
                 }
+                .animation(.easeOut(duration: 0.25), value: isSkeletonVisible)
+                .animation(.easeOut(duration: 0.25), value: recipeRepository.hasLoaded)
                 .padding(.horizontal, margin)
                 .padding(.bottom, 24)
                 // Cards stretched across a whole iPad would be enormous.
@@ -57,6 +61,10 @@ struct HomeView: View {
         .sheet(isPresented: $isShowingEditor) {
             RecipeEditorView()
         }
+        .task {
+            try? await Task.sleep(for: .milliseconds(400))
+            isSkeletonVisible = true
+        }
     }
 
     private func header(_ greeting: Greeting, date: Date) -> some View {
@@ -81,9 +89,13 @@ struct HomeView: View {
     }
 
     @ViewBuilder private func content(now: Date) -> some View {
-        if !recipeRepository.hasLoaded {
-            DelayedProgressView()
-                .frame(maxWidth: .infinity, minHeight: 200)
+        if let loadError = recipeRepository.loadError {
+            RecipesLoadFailedView(error: loadError, retry: recipeRepository.retryLoading)
+                .padding(.top, 40)
+        } else if !recipeRepository.hasLoaded {
+            if isSkeletonVisible {
+                HomeSkeleton()
+            }
         } else if recipeRepository.recipes.isEmpty {
             welcome
         } else {
@@ -107,10 +119,7 @@ struct HomeView: View {
 
     private func actions(_ summary: HomeSummary, mealType: MealType) -> some View {
         let pool = summary.surprisePool(for: mealType)
-        // Side by side, each tile is too narrow for accessibility text sizes.
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(spacing: 12))
-            : AnyLayout(HStackLayout(spacing: 12))
+        let layout = HomeActionTile.rowLayout(for: dynamicTypeSize)
         return layout {
             Button {
                 isShowingEditor = true
@@ -295,5 +304,6 @@ struct HomeView: View {
     .environment(AuthService())
     .environment(RecipeRepository())
     .environment(RecipePhotoStore())
+    .environment(Connectivity())
     .environment(AppNavigation())
 }

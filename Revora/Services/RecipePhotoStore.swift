@@ -48,16 +48,18 @@ final class RecipePhotoStore {
     /// Every photo of a recipe, including any that an earlier failed delete left behind.
     /// Unlike other writes this waits for the server: it's for deleting the account, and
     /// once the account is gone the rules would reject anything still waiting to sync.
+    /// A delete that times out still goes through once the connection is back.
     func deleteAllPhotos(recipeID: Recipe.ID) async throws(PhotoError) {
         let recipe = try recipeDocument(recipeID)
         do {
             let batch = Firestore.firestore().batch()
             for size in [Size.full, .thumbnail] {
-                for document in try await recipe.collection(size.rawValue).getDocuments(source: .server).documents {
+                let photos = try await withTimeout { try await recipe.collection(size.rawValue).getDocuments(source: .server) }
+                for document in photos.documents {
                     batch.deleteDocument(document.reference)
                 }
             }
-            try await batch.commit()
+            try await withTimeout { try await batch.commit() }
         } catch {
             Self.logger.error("Deleting all photos failed: \(error)")
             throw PhotoError(error)

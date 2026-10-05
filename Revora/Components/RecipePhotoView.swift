@@ -9,8 +9,11 @@ struct RecipePhotoView: View {
     var placeholderFont: Font = .title2
 
     @Environment(RecipePhotoStore.self) private var photoStore
+    @Environment(Connectivity.self) private var connectivity
 
     @State private var loadedImage: UIImage?
+    /// Goes up when the connection comes back, so a photo that couldn't load offline tries again.
+    @State private var attempt = 0
 
     /// Anything already in memory shows straight away. For the full size that includes the
     /// thumbnail, which the list has usually loaded, so a header never starts out empty.
@@ -39,12 +42,22 @@ struct RecipePhotoView: View {
             .animation(.easeOut(duration: 0.2), value: loadedImage)
             // Decorative: the recipe's title right next to it carries the meaning.
             .accessibilityHidden(true)
-            .task(id: photoID) {
+            .task(id: Load(photoID: photoID, attempt: attempt)) {
                 loadedImage = nil
                 guard let photoID else { return }
                 loadedImage = try? await photoStore.image(photoID: photoID, recipeID: recipeID, size: size)
             }
+            .onChange(of: connectivity.isOnline) { _, isOnline in
+                if isOnline && image == nil && photoID != nil {
+                    attempt += 1
+                }
+            }
     }
+}
+
+private struct Load: Equatable {
+    let photoID: String?
+    let attempt: Int
 }
 
 extension RecipePhotoView {

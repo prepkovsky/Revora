@@ -32,7 +32,7 @@ The app needs `Revora/GoogleService-Info.plist` to build and run. It is gitignor
 ```
 Revora/
 ├── App/            App entry point, root view (auth vs. main tabs)
-├── Services/       AuthService, RecipeRepository, RecipePhotoStore (Firebase wrappers)
+├── Services/       AuthService, RecipeRepository, RecipePhotoStore (Firebase wrappers), Connectivity
 ├── Models/         Recipe, RecipeSection, Ingredient, Step, MealType
 ├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
 ├── Components/     Shared reusable views

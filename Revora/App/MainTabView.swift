@@ -8,18 +8,21 @@ struct MainTabView: View {
             Tab("Home", systemImage: "house", value: .home) {
                 NavigationStack {
                     HomeView()
+                        .offlineIndicator()
                 }
             }
 
             Tab("Recipes", systemImage: "fork.knife", value: .recipes) {
                 NavigationStack {
                     RecipesView()
+                        .offlineIndicator()
                 }
             }
 
             Tab("Account", systemImage: "person.crop.circle", value: .account) {
                 NavigationStack {
                     AccountView()
+                        .offlineIndicator()
                 }
             }
         }
@@ -32,4 +35,5 @@ struct MainTabView: View {
         .environment(AuthService())
         .environment(RecipeRepository())
         .environment(RecipePhotoStore())
+        .environment(Connectivity())
 }

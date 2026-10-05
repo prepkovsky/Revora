@@ -10,6 +10,10 @@ struct RecipesView: View {
     @State private var deleteError: RecipeError?
     @State private var favoriteError: RecipeError?
     @State private var searchText = ""
+    /// Like a spinner, the skeleton waits a moment, so a quick load doesn't flash it.
+    @State private var isSkeletonVisible = false
+    @State private var listHeight = 0.0
+    @ScaledMetric private var skeletonRowHeight = 72.0
 
     var body: some View {
         content
@@ -30,13 +34,16 @@ struct RecipesView: View {
             }
             .recipeErrorAlert("Couldn't Delete Recipe", error: $deleteError)
             .recipeErrorAlert("Couldn't Update Favorites", error: $favoriteError)
+            .task {
+                try? await Task.sleep(for: .milliseconds(400))
+                isSkeletonVisible = true
+            }
     }
 
     @ViewBuilder private var content: some View {
-        if !recipeRepository.hasLoaded {
-            DelayedProgressView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if recipeRepository.recipes.isEmpty {
+        if let loadError = recipeRepository.loadError {
+            RecipesLoadFailedView(error: loadError, retry: recipeRepository.retryLoading)
+        } else if recipeRepository.hasLoaded && recipeRepository.recipes.isEmpty {
             ContentUnavailableView {
                 Label(displayTitle: "No Recipes Yet", systemImage: "fork.knife")
             } description: {
@@ -48,15 +55,17 @@ struct RecipesView: View {
                 .buttonStyle(.primary)
             }
         } else {
-            recipeList(navigation.recipeFilter.apply(
+            // The same list while loading, so the recipes replace the skeleton without a jump.
+            recipeList(recipeRepository.hasLoaded ? navigation.recipeFilter.apply(
                 to: recipeRepository.recipes,
                 mealType: navigation.mealType,
                 searchText: searchText
-            ))
+            ) : nil)
         }
     }
 
-    private func recipeList(_ recipes: [Recipe]) -> some View {
+    /// `nil` while the recipes load.
+    private func recipeList(_ recipes: [Recipe]?) -> some View {
         @Bindable var navigation = navigation
         return List {
             // In the list rather than pinned under the bar, so the search field
@@ -77,52 +86,68 @@ struct RecipesView: View {
                 .listRowSeparator(.hidden)
 
             Section {
-                ForEach(recipes) { recipe in
-                    NavigationLink(value: recipe) {
-                        RecipeRowView(recipe: recipe)
+                if let recipes {
+                    recipeRows(recipes)
+                } else if isSkeletonVisible {
+                    // About as many as fit on screen. VoiceOver hears only the first.
+                    ForEach(0..<max(Int(listHeight / skeletonRowHeight), 3), id: \.self) { index in
+                        RecipeRowSkeleton(index: index)
+                            .accessibilityHidden(index > 0)
+                            .listRowBackground(Color.surface)
                     }
-                    // A full swipe is fine here: it's undone by swiping again.
-                    .swipeActions(edge: .leading) {
-                        Button(
-                            recipe.isFavorite ? "Unfavorite" : "Favorite",
-                            systemImage: recipe.isFavorite ? "heart.slash" : "heart"
-                        ) {
-                            setFavorite(!recipe.isFavorite, for: recipe)
-                        }
-                        .tint(.secondaryAccent)
-                    }
-                    // No full swipe, and a confirmation, because deleting can't be undone.
-                    // Not the destructive role: that slides the row out before anyone has confirmed.
-                    .swipeActions(allowsFullSwipe: false) {
-                        Button("Delete", systemImage: "trash") {
-                            recipeToDelete = recipe
-                        }
-                        .tint(.red)
-                    }
-                    // On each row, so the dialog points at the recipe it's about.
-                    .confirmationDialog(
-                        "Delete \"\(recipe.title)\"?",
-                        isPresented: Binding { recipeToDelete?.id == recipe.id } set: { if !$0 { recipeToDelete = nil } },
-                        titleVisibility: .visible
-                    ) {
-                        Button("Delete Recipe", role: .destructive) {
-                            delete(recipe)
-                        }
-                    } message: {
-                        Text("This can't be undone.")
-                    }
-                    .listRowBackground(Color.surface)
                 }
             }
         }
         .listSectionSpacing(.compact)
         .scrollContentBackground(.hidden)
+        .animation(.easeOut(duration: 0.25), value: isSkeletonVisible)
+        .animation(.easeOut(duration: 0.25), value: recipes == nil)
+        .onGeometryChange(for: Double.self) { $0.size.height } action: { listHeight = $0 }
         .overlay {
-            if recipes.isEmpty {
+            if recipes?.isEmpty == true {
                 emptyResult
             }
         }
         .searchable(text: $searchText, prompt: "Search Recipes")
+    }
+
+    private func recipeRows(_ recipes: [Recipe]) -> some View {
+        ForEach(recipes) { recipe in
+            NavigationLink(value: recipe) {
+                RecipeRowView(recipe: recipe)
+            }
+            // A full swipe is fine here: it's undone by swiping again.
+            .swipeActions(edge: .leading) {
+                Button(
+                    recipe.isFavorite ? "Unfavorite" : "Favorite",
+                    systemImage: recipe.isFavorite ? "heart.slash" : "heart"
+                ) {
+                    setFavorite(!recipe.isFavorite, for: recipe)
+                }
+                .tint(.secondaryAccent)
+            }
+            // No full swipe, and a confirmation, because deleting can't be undone.
+            // Not the destructive role: that slides the row out before anyone has confirmed.
+            .swipeActions(allowsFullSwipe: false) {
+                Button("Delete", systemImage: "trash") {
+                    recipeToDelete = recipe
+                }
+                .tint(.red)
+            }
+            // On each row, so the dialog points at the recipe it's about.
+            .confirmationDialog(
+                "Delete \"\(recipe.title)\"?",
+                isPresented: Binding { recipeToDelete?.id == recipe.id } set: { if !$0 { recipeToDelete = nil } },
+                titleVisibility: .visible
+            ) {
+                Button("Delete Recipe", role: .destructive) {
+                    delete(recipe)
+                }
+            } message: {
+                Text("This can't be undone.")
+            }
+            .listRowBackground(Color.surface)
+        }
     }
 
     /// One meal at a time. Tapping the picked one again shows every meal.
@@ -218,5 +243,6 @@ struct RecipesView: View {
     }
     .environment(RecipeRepository())
     .environment(RecipePhotoStore())
+    .environment(Connectivity())
     .environment(AppNavigation())
 }

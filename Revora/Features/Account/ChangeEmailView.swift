@@ -114,7 +114,7 @@ struct ChangeEmailView: View {
         switch error {
         case .invalidEmail, .emailAlreadyInUse: .newEmail
         case .wrongPassword: .password
-        case .weakPassword, .wrongCredentials, .network, .tooManyRequests, .unknown: nil
+        case .weakPassword, .wrongCredentials, .network, .timedOut, .tooManyRequests, .unknown: nil
         }
     }
 

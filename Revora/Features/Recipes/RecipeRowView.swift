@@ -54,4 +54,5 @@ struct RecipeRowView: View {
         RecipeRowView(recipe: Recipe(id: "2", title: "Banana Bread", isFavorite: true, createdAt: .now, updatedAt: .now))
     }
     .environment(RecipePhotoStore())
+    .environment(Connectivity())
 }

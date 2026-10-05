@@ -530,4 +530,5 @@ struct RecipeEditorView: View {
     RecipeEditorView()
         .environment(RecipeRepository())
         .environment(RecipePhotoStore())
+        .environment(Connectivity())
 }

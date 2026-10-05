@@ -79,6 +79,13 @@ struct RecipeCard: View {
 /// A shortcut under the greeting. Two sit side by side; one on its own lies flat,
 /// so it doesn't leave a big empty block.
 struct HomeActionTile: View {
+    /// Side by side, each tile is too narrow for accessibility text sizes.
+    static func rowLayout(for dynamicTypeSize: DynamicTypeSize) -> AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: 12))
+            : AnyLayout(HStackLayout(spacing: 12))
+    }
+
     let title: LocalizedStringResource
     let subtitle: LocalizedStringResource
     let systemImage: String
@@ -190,4 +197,5 @@ extension ButtonStyle where Self == CardButtonStyle {
     }
     .background(.appBackground)
     .environment(RecipePhotoStore())
+    .environment(Connectivity())
 }

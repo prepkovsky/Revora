@@ -257,4 +257,5 @@ struct RecipeDetailView: View {
     }
     .environment(RecipeRepository())
     .environment(RecipePhotoStore())
+    .environment(Connectivity())
 }

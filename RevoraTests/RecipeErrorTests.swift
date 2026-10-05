@@ -7,6 +7,7 @@ struct RecipeErrorTests {
     @Test(arguments: [
         (FirestoreErrorCode.Code.unavailable, RecipeError.offline),
         (.unauthenticated, .signedOut),
+        (.resourceExhausted, .quotaExceeded),
         (.permissionDenied, .unknown),
         (.internal, .unknown),
     ])
@@ -16,12 +17,17 @@ struct RecipeErrorTests {
 
     @Test(arguments: [
         (PhotoError.offline, RecipeError.offline),
+        (.timedOut, .timedOut),
         (.signedOut, .signedOut),
-        (.quotaExceeded, .unknown),
+        (.quotaExceeded, .quotaExceeded),
         (.notFound, .unknown),
     ])
     func mapsPhotoErrors(photoError: PhotoError, expected: RecipeError) {
         #expect(RecipeError(photoError) == expected)
+    }
+
+    @Test func mapsTimeouts() {
+        #expect(RecipeError(TimeoutError()) == .timedOut)
     }
 
     @Test func treatsOtherDomainsAsUnknown() {

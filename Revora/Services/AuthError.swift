@@ -10,10 +10,16 @@ enum AuthError: Error, Equatable {
     /// Re-entering the password of the signed-in account, where only the password can be wrong.
     case wrongPassword
     case network
+    case timedOut
     case tooManyRequests
     case unknown
 
     init(_ error: any Error) {
+        if error is TimeoutError {
+            self = .timedOut
+            return
+        }
+
         let error = error as NSError
         guard error.domain == AuthErrors.domain, let code = AuthErrorCode(rawValue: error.code) else {
             self = .unknown
@@ -52,6 +58,8 @@ enum AuthError: Error, Equatable {
             "That password isn't right. Try again."
         case .network:
             "You're offline. Check your connection and try again."
+        case .timedOut:
+            "This is taking too long. Check your connection and try again."
         case .tooManyRequests:
             "Too many attempts. Wait a moment and try again."
         case .unknown:

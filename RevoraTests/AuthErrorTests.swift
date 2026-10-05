@@ -33,6 +33,11 @@ struct AuthErrorTests {
         #expect(AuthError(reauthenticating: firebaseError(.networkError)) == .network)
     }
 
+    @Test func mapsTimeouts() {
+        #expect(AuthError(TimeoutError()) == .timedOut)
+        #expect(AuthError(reauthenticating: TimeoutError()) == .timedOut)
+    }
+
     @Test func treatsOtherDomainsAsUnknown() {
         let error = NSError(domain: NSURLErrorDomain, code: AuthErrorCode.emailAlreadyInUse.rawValue)
         #expect(AuthError(error) == .unknown)

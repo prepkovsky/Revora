@@ -120,7 +120,7 @@ struct ChangePasswordView: View {
         switch error {
         case .wrongPassword: .currentPassword
         case .weakPassword: .newPassword
-        case .emailAlreadyInUse, .invalidEmail, .wrongCredentials, .network, .tooManyRequests, .unknown: nil
+        case .emailAlreadyInUse, .invalidEmail, .wrongCredentials, .network, .timedOut, .tooManyRequests, .unknown: nil
         }
     }
 

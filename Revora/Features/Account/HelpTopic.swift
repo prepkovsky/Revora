@@ -75,7 +75,7 @@ nonisolated struct HelpTopic: Identifiable, Sendable {
             ),
             Question(
                 question: "Can I use Revora offline?",
-                answer: "Yes. Recipes you've already seen open without a connection, and new recipes and edits are saved on your device, then synced once you're back online. Logging in and changes to your account need a connection."
+                answer: "Yes. Recipes you've already seen open without a connection, and new recipes and edits are saved on your device, then synced once you're back online. Until then, Offline shows at the top of the screen. Logging in and changes to your account need a connection."
             ),
         ]),
         HelpTopic(title: "Your Account", questions: [

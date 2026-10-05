@@ -12,6 +12,13 @@ final class RecipeRepository {
     /// Whether the first snapshot has arrived, so an empty list really means no recipes.
     private(set) var hasLoaded = false
 
+    /// Why the recipes couldn't load, so screens can say so instead of loading forever.
+    /// Going offline isn't an error: the listener then serves the device's copy.
+    private(set) var loadError: RecipeError?
+
+    /// Goes up each time loading is tried again, so `RootView` starts a new listener.
+    private(set) var loadAttempt = 0
+
     /// Whose recipes are loaded. Writes go under this user too.
     private var ownerID: String?
 
@@ -19,6 +26,7 @@ final class RecipeRepository {
     /// sign-out stops the listener and clears the recipes.
     func observeRecipes(ownerID: String) async {
         self.ownerID = ownerID
+        loadError = nil
         defer {
             // A cancelled listener can finish after the next user's has started.
             if self.ownerID == ownerID {
@@ -37,7 +45,14 @@ final class RecipeRepository {
         } catch where !Task.isCancelled {
             // Signing out can fail the listener just before the task is cancelled.
             Self.logger.error("Recipe listener failed: \(error)")
+            loadError = RecipeError(error)
         } catch {}
+    }
+
+    /// A failed listener doesn't restart by itself.
+    func retryLoading() {
+        loadError = nil
+        loadAttempt += 1
     }
 
     // Writes go to Firestore's local cache and sync in the background. Awaiting them
@@ -114,7 +129,7 @@ final class RecipeRepository {
     func deleteAllRecipes(photoStore: RecipePhotoStore) async throws(RecipeError) {
         let collection = try recipesCollection()
         do {
-            let documents = try await collection.getDocuments(source: .server).documents
+            let documents = try await withTimeout { try await collection.getDocuments(source: .server) }.documents
             for document in documents {
                 try await photoStore.deleteAllPhotos(recipeID: document.documentID)
             }
@@ -124,7 +139,7 @@ final class RecipeRepository {
                 for document in documents[start..<min(start + 500, documents.count)] {
                     batch.deleteDocument(document.reference)
                 }
-                try await batch.commit()
+                try await withTimeout { try await batch.commit() }
             }
         } catch {
             Self.logger.error("Deleting all recipes failed: \(error)")

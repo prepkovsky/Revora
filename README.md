@@ -2,7 +2,7 @@
 
 A simple recipe app for iPhone and iPad. Sign up with email and password, save your own recipes (title, ingredients and steps, split into sections if you like, plus meal types), and mark your favorites.
 
-> **Status:** early development. Accounts, recipes (create, edit, delete, cover photos, sections and bullet points), favorites, meal types, the recipe filters and search, the Home screen (greeting, quick actions, continue cooking, a row for the current meal, favorites, rediscover and browse by meal), and the Account tab (name, email and password changes, log out, appearance, legal pages and account deletion) are in place. Polish is next: offline behavior, accessibility and iPad.
+> **Status:** early development. Accounts, recipes (create, edit, delete, cover photos, sections and bullet points), favorites, meal types, the recipe filters and search, the Home screen (greeting, quick actions, continue cooking, a row for the current meal, favorites, rediscover and browse by meal), and the Account tab (name, email and password changes, log out, appearance, legal pages and account deletion) are in place, and the app keeps working offline. Polish is next: accessibility and iPad.
 
 ## Requirements
 
@@ -42,7 +42,7 @@ The unit tests use Swift Testing and never call Firebase.
 ```
 Revora/
 ├── App/            App entry point, root view and tab bar
-├── Services/       Firebase wrappers (auth, recipe storage)
+├── Services/       Firebase wrappers (auth, recipe storage), connectivity
 ├── Models/         Recipe data types
 ├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
 ├── Components/     Shared reusable views
