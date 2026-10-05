@@ -36,7 +36,7 @@ struct VerifyEmailView: View {
                     }
                 }
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
 
                 if authService.isVerificationSent {
                     HStack(spacing: 8) {
@@ -44,7 +44,7 @@ struct VerifyEmailView: View {
                         Text("Waiting for you to confirm")
                     }
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
                     .accessibilityElement(children: .combine)
                 }
 
@@ -54,7 +54,7 @@ struct VerifyEmailView: View {
                     } else if resentCount > 0 {
                         Label("We sent a new link.", systemImage: "checkmark.circle")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.secondaryText)
                     }
 
                     if authService.isVerificationSent {
@@ -78,7 +78,7 @@ struct VerifyEmailView: View {
 
                 Button("Log Out", action: logOut)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
                     .frame(minHeight: 44)
             }
             .padding(.top, 24)

@@ -30,7 +30,7 @@ struct ContinueCookingCard: View {
                             }
                         }
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                     }
                 }
                 .multilineTextAlignment(.leading)
@@ -124,7 +124,7 @@ struct HomeActionTile: View {
                 Text(subtitle)
                     .font(.subheadline)
                     .opacity(isProminent ? 0.85 : 1)
-                    .foregroundStyle(isProminent ? AnyShapeStyle(.accentForeground) : AnyShapeStyle(.secondary))
+                    .foregroundStyle(isProminent ? AnyShapeStyle(.accentForeground) : AnyShapeStyle(.secondaryText))
             }
             .multilineTextAlignment(.leading)
         }
@@ -168,7 +168,7 @@ struct MealTile: View {
                     }
                 }
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
             }
             .multilineTextAlignment(.leading)
         }

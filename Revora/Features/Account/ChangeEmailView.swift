@@ -57,7 +57,7 @@ struct ChangeEmailView: View {
     private var formContent: some View {
         VStack(alignment: .leading, spacing: 24) {
             Text("We'll send a link to your new email to check that it's yours. Your email changes once you open it, and then you log in again with the new one.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
 
             FormField(
                 label: "New Email",

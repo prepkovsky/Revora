@@ -19,7 +19,7 @@ struct RegisterView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Create an account to keep your recipes synced and safe.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
 
                 FormField(
                     label: "Name",

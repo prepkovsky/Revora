@@ -66,7 +66,7 @@ struct ResetPasswordView: View {
     private var form: some View {
         VStack(alignment: .leading, spacing: 24) {
             Text("Enter the email you use for Revora, and we'll send you a link to reset your password.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
 
             FormField(label: "Email", error: emailError, focus: $focusedField, field: .email) {
                 TextField("Email", text: $email, prompt: Text(verbatim: "name@example.com"))

@@ -6,7 +6,7 @@ struct HelpView: View {
     var body: some View {
         List {
             Text("Answers to common questions about Revora. Tap a question to see its answer.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
 
@@ -15,13 +15,14 @@ struct HelpView: View {
                     ForEach(topic.questions) { item in
                         DisclosureGroup {
                             Text(item.answer)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.secondaryText)
                         } label: {
                             Text(item.question)
                         }
                     }
                 } header: {
                     Text(topic.title)
+                        .foregroundStyle(.secondaryText)
                 }
                 .listRowBackground(Color.surface)
             }

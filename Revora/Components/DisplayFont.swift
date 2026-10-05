@@ -34,18 +34,6 @@ extension Font {
     }
 }
 
-extension Label where Title == Text, Icon == Image {
-    /// An empty state's title in the display face. `ContentUnavailableView` sets its own
-    /// fonts, but a font on the title's own text wins.
-    init(displayTitle: LocalizedStringResource, systemImage: String) {
-        self.init {
-            Text(displayTitle).font(.display(.title2))
-        } icon: {
-            Image(systemName: systemImage)
-        }
-    }
-}
-
 private extension Font.TextStyle {
     /// Sizes at the default text size (Large), which Dynamic Type scales from.
     var defaultSize: CGFloat {
@@ -70,7 +58,7 @@ private extension Font.TextStyle {
 #Preview {
     VStack(alignment: .leading, spacing: 12) {
         Text("Good evening").font(.display(.largeTitle))
-        Text("What's for dinner?").font(.display(.title2, italic: true)).foregroundStyle(.secondary)
+        Text("What's for dinner?").font(.display(.title2, italic: true)).foregroundStyle(.secondaryText)
         Text("Crème Brûlée").font(.display(.headline))
     }
 }

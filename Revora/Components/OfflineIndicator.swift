@@ -27,7 +27,7 @@ private struct OfflineIndicator: ViewModifier {
                                 Text("Offline")
                             }
                             .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.secondaryText)
                         }
                         .accessibilityHint("Explains what works without a connection")
                         .popover(isPresented: $isExplaining) {

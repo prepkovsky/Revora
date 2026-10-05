@@ -73,7 +73,7 @@ struct HomeView: View {
                 .font(.footnote.weight(.semibold))
                 .textCase(.uppercase)
                 .tracking(1)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
                 .padding(.bottom, 4)
 
             Text(greeting.title(firstName: authService.currentUser?.firstName))
@@ -83,7 +83,7 @@ struct HomeView: View {
 
             Text(greeting.prompt)
                 .font(.display(.title2, italic: true))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
         }
         .padding(.top, 8)
     }
@@ -177,7 +177,7 @@ struct HomeView: View {
             if recipes.isEmpty {
                 Label {
                     Text("Tap the heart on a recipe to keep it close at hand here.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                 } icon: {
                     Image(systemName: "heart")
                         .foregroundStyle(.secondaryAccent)
@@ -251,7 +251,7 @@ struct HomeView: View {
                     .font(.display(.title2))
                     .accessibilityAddTraits(.isHeader)
                 Text("Save the recipes you love, with their ingredients, steps and a photo, and find them here anytime.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
             }
             .multilineTextAlignment(.center)
 
@@ -303,7 +303,7 @@ struct HomeView: View {
                 if let subtitle {
                     Text(subtitle)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                 }
             }
             content()

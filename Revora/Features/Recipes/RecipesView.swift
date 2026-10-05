@@ -45,9 +45,10 @@ struct RecipesView: View {
             RecipesLoadFailedView(error: loadError, retry: recipeRepository.retryLoading)
         } else if recipeRepository.hasLoaded && recipeRepository.recipes.isEmpty {
             ContentUnavailableView {
-                Label(displayTitle: "No Recipes Yet", systemImage: "fork.knife")
+                EmptyStateLabel("No Recipes Yet", systemImage: "fork.knife")
             } description: {
                 Text("Recipes you create will show up here.")
+                    .foregroundStyle(.secondaryText)
             } actions: {
                 Button("Create Your First Recipe") {
                     isShowingEditor = true
@@ -181,17 +182,26 @@ struct RecipesView: View {
     /// All is only empty when there are no recipes at all, which has its own screen.
     @ViewBuilder private var emptyResult: some View {
         if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            ContentUnavailableView.search(text: searchText)
+            // Not the built-in search state, whose description is in the system's paler gray.
+            ContentUnavailableView {
+                EmptyStateLabel("No Results for “\(searchText)”", systemImage: "magnifyingglass")
+            } description: {
+                Text("Check the spelling or try a new search.")
+                    .foregroundStyle(.secondaryText)
+            }
         } else if let mealType = navigation.mealType {
             let meal = String(localized: mealType.title)
             ContentUnavailableView {
-                Label(displayTitle: "No \(meal) Recipes", systemImage: mealType.systemImage)
+                EmptyStateLabel("No \(meal) Recipes", systemImage: mealType.systemImage)
             } description: {
-                switch navigation.recipeFilter {
-                case .recent: Text("You haven't opened a \(meal) recipe in the last \(RecipeFilter.recentDays) days.")
-                case .all: Text("Mark recipes as \(meal) when you edit them to see them here.")
-                case .favorites: Text("None of your favorites are marked \(meal).")
+                Group {
+                    switch navigation.recipeFilter {
+                    case .recent: Text("You haven't opened a \(meal) recipe in the last \(RecipeFilter.recentDays) days.")
+                    case .all: Text("Mark recipes as \(meal) when you edit them to see them here.")
+                    case .favorites: Text("None of your favorites are marked \(meal).")
+                    }
                 }
+                .foregroundStyle(.secondaryText)
             } actions: {
                 Button("Show All Meals") {
                     withAnimation(.snappy) {
@@ -204,15 +214,17 @@ struct RecipesView: View {
             switch navigation.recipeFilter {
             case .recent:
                 ContentUnavailableView {
-                    Label(displayTitle: "No Recent Recipes", systemImage: "clock")
+                    EmptyStateLabel("No Recent Recipes", systemImage: "clock")
                 } description: {
                     Text("Recipes you open stay here for \(RecipeFilter.recentDays) days.")
+                        .foregroundStyle(.secondaryText)
                 }
             case .favorites:
                 ContentUnavailableView {
-                    Label(displayTitle: "No Favorites Yet", systemImage: "heart")
+                    EmptyStateLabel("No Favorites Yet", systemImage: "heart")
                 } description: {
                     Text("Tap the heart on a recipe to see it here.")
+                        .foregroundStyle(.secondaryText)
                 }
             case .all:
                 EmptyView()

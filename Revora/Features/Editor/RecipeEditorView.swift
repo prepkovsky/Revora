@@ -61,13 +61,16 @@ struct RecipeEditorView: View {
             Form {
                 EditorPhotoSection(photo: $draft.photo, isPreparing: $isPreparingPhoto)
 
-                Section("Title") {
+                Section {
                     TextField("Title", text: $draft.title, prompt: Text("e.g. Banana Bread"))
                         // With a prompt, the field's own title doesn't reach VoiceOver.
                         .accessibilityLabel("Title")
                         .focused($focusedField, equals: .title)
                         .submitLabel(.next)
                         .onSubmit(focusFirstIngredient)
+                } header: {
+                    Text("Title")
+                        .foregroundStyle(.secondaryText)
                 }
                 .listRowBackground(Color.surface)
 
@@ -88,12 +91,14 @@ struct RecipeEditorView: View {
                     .padding(.vertical, 6)
                 } header: {
                     Text("Meal")
+                        .foregroundStyle(.secondaryText)
                 } footer: {
                     Text("Pick any that fit. Surprise Me on Home suggests recipes for the time of day.")
+                        .foregroundStyle(.secondaryText)
                 }
                 .listRowBackground(Color.surface)
 
-                Section("Ingredients") {
+                Section {
                     ForEach($draft.ingredients) { $row in
                         Group {
                             if row.isSection {
@@ -111,10 +116,13 @@ struct RecipeEditorView: View {
 
                     Button("Add Ingredient", systemImage: "plus.circle.fill") { addIngredient() }
                     Button("Add Section", systemImage: "text.badge.plus", action: addIngredientSection)
+                } header: {
+                    Text("Ingredients")
+                        .foregroundStyle(.secondaryText)
                 }
                 .listRowBackground(Color.surface)
 
-                Section("Steps") {
+                Section {
                     let numbers = draft.stepNumbers
                     let sectionedSteps = Set(draft.steps.drop { !$0.isSection }.map(\.id))
                     ForEach($draft.steps) { $row in
@@ -136,6 +144,9 @@ struct RecipeEditorView: View {
 
                     Button("Add Step", systemImage: "plus.circle.fill") { addStep() }
                     Button("Add Section", systemImage: "text.badge.plus", action: addStepSection)
+                } header: {
+                    Text("Steps")
+                        .foregroundStyle(.secondaryText)
                 }
                 .listRowBackground(Color.surface)
             }
@@ -201,7 +212,7 @@ struct RecipeEditorView: View {
             if let number {
                 Text("\(number).")
                     .monospacedDigit()
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
                     .accessibilityHidden(true)
             }
             // Wraps, like the steps, so long names aren't cut off at large text sizes.
@@ -260,7 +271,7 @@ struct RecipeEditorView: View {
         return HStack(alignment: .top) {
             Text("\(number).")
                 .monospacedDigit()
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 10) {
                 TextField("Step \(number)", text: step.text, prompt: Text("Describe this step"), axis: .vertical)
@@ -279,7 +290,7 @@ struct RecipeEditorView: View {
                 ForEach(step.bullets) { $bullet in
                     HStack(alignment: .top) {
                         Text("•")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.secondaryText)
                             .accessibilityHidden(true)
                         TextField("Bullet point", text: $bullet.text, prompt: Text("Bullet point"), axis: .vertical)
                             .accessibilityLabel("Bullet point")

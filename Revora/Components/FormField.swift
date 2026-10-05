@@ -47,7 +47,7 @@ struct FormField<Field: Hashable, Input: View>: View {
             } else if let hint {
                 Text(hint)
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
             }
         }
     }

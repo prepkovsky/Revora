@@ -17,10 +17,10 @@ struct LoginView: View {
             VStack(alignment: .leading, spacing: 24) {
                 if let changedEmail = authService.changedEmail {
                     Label("Your email is now \(changedEmail). Log in with it to get back to your recipes.", systemImage: "checkmark.circle")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                 } else {
                     Text("Welcome back. Log in to get to your recipes.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                 }
 
                 FormField(label: "Email", error: error(for: .email), focus: $focusedField, field: .email) {
@@ -72,7 +72,7 @@ struct LoginView: View {
                     }
                 } label: {
                     Text("New to Revora? \(Text("Create an account").fontWeight(.semibold).foregroundStyle(.tint))")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                         .frame(maxWidth: .infinity, minHeight: 44)
                         .contentShape(.rect)
                 }

@@ -21,7 +21,7 @@ struct ConfirmationMessage: View {
 
             message
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
 
             Button(action: action) {
                 Text(buttonTitle)

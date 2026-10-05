@@ -52,7 +52,7 @@ struct PasswordField: View {
             // Only as wide as the gap, so taps at the end of the text still reach the field.
             .padding(.vertical, -13)
             .padding(.horizontal, -8)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.secondaryText)
         }
         .onChange(of: focusedInput) {
             // Focus set on the whole field from outside can land on the hidden input.

@@ -22,7 +22,7 @@ struct LegalDocumentView: View {
             .background(.appBackground)
         } else {
             ContentUnavailableView {
-                Label(displayTitle: "Couldn't Load This Page", systemImage: "doc.questionmark")
+                EmptyStateLabel("Couldn't Load This Page", systemImage: "doc.questionmark")
             }
             .background(.appBackground)
         }
@@ -41,7 +41,7 @@ struct LegalDocumentView: View {
         case .listItem(let text):
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(verbatim: "•")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
                     .accessibilityHidden(true)
                 Text(styled(text))
             }

@@ -25,7 +25,7 @@ struct DeleteAccountView: View {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Deleting your account permanently removes:")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
 
                     VStack(alignment: .leading, spacing: 12) {
                         Label(authService.currentUser?.email ?? "Your account", systemImage: "person.crop.circle")

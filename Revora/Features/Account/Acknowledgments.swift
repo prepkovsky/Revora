@@ -52,12 +52,13 @@ struct AcknowledgmentsView: View {
                             Text(verbatim: component.name)
                             Text(verbatim: component.license)
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.secondaryText)
                         }
                     }
                 }
             } footer: {
                 Text("Revora is built with these open-source projects. Thank you to everyone who works on them.")
+                    .foregroundStyle(.secondaryText)
             }
             .listRowBackground(Color.surface)
         }

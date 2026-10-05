@@ -46,9 +46,10 @@ struct RecipeDetailView: View {
                 content(for: recipe)
             } else {
                 ContentUnavailableView {
-                    Label(displayTitle: "Recipe Not Found", systemImage: "fork.knife")
+                    EmptyStateLabel("Recipe Not Found", systemImage: "fork.knife")
                 } description: {
                     Text("It may have been deleted.")
+                        .foregroundStyle(.secondaryText)
                 }
             }
         }
@@ -111,7 +112,7 @@ struct RecipeDetailView: View {
         return layout {
             Text("\(number).")
                 .monospacedDigit()
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
             VStack(alignment: .leading, spacing: 6) {
                 if !step.text.isEmpty {
                     Text(step.text)
@@ -119,7 +120,7 @@ struct RecipeDetailView: View {
                 ForEach(step.bullets.indices, id: \.self) { index in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text("•")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.secondaryText)
                         Text(step.bullets[index])
                     }
                 }
@@ -152,7 +153,7 @@ struct RecipeDetailView: View {
                                 Image(systemName: mealType.systemImage)
                                     .foregroundStyle(.secondaryAccent)
                                 Text(mealType.title)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.secondaryText)
                             }
                         }
                     }
@@ -166,7 +167,7 @@ struct RecipeDetailView: View {
 
             // One card per list, with each section's name as a heading row inside it.
             if !recipe.ingredientSections.isEmpty {
-                Section("Ingredients") {
+                Section {
                     ForEach(recipe.ingredientSections.indices, id: \.self) { index in
                         let section = recipe.ingredientSections[index]
                         if let title = section.title {
@@ -176,12 +177,15 @@ struct RecipeDetailView: View {
                             ingredientRow(section.items[itemIndex])
                         }
                     }
+                } header: {
+                    Text("Ingredients")
+                        .foregroundStyle(.secondaryText)
                 }
                 .listRowBackground(Color.surface)
             }
 
             if !recipe.stepSections.isEmpty {
-                Section("Steps") {
+                Section {
                     // Named sections are numbered; steps start again at 1 in each.
                     let firstSectionNumber = recipe.stepSections.first?.title == nil ? 0 : 1
                     ForEach(recipe.stepSections.indices, id: \.self) { index in
@@ -193,13 +197,16 @@ struct RecipeDetailView: View {
                             stepRow(section.items[itemIndex], number: itemIndex + 1)
                         }
                     }
+                } header: {
+                    Text("Steps")
+                        .foregroundStyle(.secondaryText)
                 }
                 .listRowBackground(Color.surface)
             }
 
             if recipe.ingredients.isEmpty && recipe.steps.isEmpty {
                 Text("This recipe doesn't have any ingredients or steps yet.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
             }

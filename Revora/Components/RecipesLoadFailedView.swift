@@ -8,9 +8,10 @@ struct RecipesLoadFailedView: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label(displayTitle: "Couldn't Load Recipes", systemImage: "exclamationmark.triangle")
+            EmptyStateLabel("Couldn't Load Recipes", systemImage: "exclamationmark.triangle")
         } description: {
             Text(error.message)
+                .foregroundStyle(.secondaryText)
         } actions: {
             Button("Try Again", action: retry)
                 .buttonStyle(.primary)

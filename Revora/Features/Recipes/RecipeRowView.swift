@@ -46,7 +46,7 @@ struct RecipeRowView: View {
                 .font(.headline)
             summary
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
         }
     }
 

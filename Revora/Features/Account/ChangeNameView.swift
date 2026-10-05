@@ -31,7 +31,7 @@ struct ChangeNameView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Your name shows on your account, and Home greets you with your first name.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
 
                 FormField(
                     label: "Name",

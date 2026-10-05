@@ -24,7 +24,7 @@ struct AccountView: View {
             }
             .listRowBackground(Color.surface)
 
-            Section("Profile") {
+            Section {
                 NavigationLink {
                     ChangeNameView(currentName: user?.name)
                 } label: {
@@ -40,28 +40,37 @@ struct AccountView: View {
                 } label: {
                     Label("Change Password", systemImage: "key")
                 }
+            } header: {
+                Text("Profile")
+                    .foregroundStyle(.secondaryText)
             }
             .listRowBackground(Color.surface)
 
-            Section("Appearance") {
+            Section {
                 Picker("Theme", systemImage: "circle.lefthalf.filled", selection: $appearance) {
                     ForEach(Appearance.allCases) { appearance in
                         Text(appearance.title)
                     }
                 }
+            } header: {
+                Text("Appearance")
+                    .foregroundStyle(.secondaryText)
             }
             .listRowBackground(Color.surface)
 
-            Section("Support") {
+            Section {
                 NavigationLink {
                     HelpView()
                 } label: {
                     Label("Help", systemImage: "questionmark.circle")
                 }
+            } header: {
+                Text("Support")
+                    .foregroundStyle(.secondaryText)
             }
             .listRowBackground(Color.surface)
 
-            Section("Legal") {
+            Section {
                 ForEach(LegalPage.allCases) { page in
                     NavigationLink {
                         LegalPageView(page: page)
@@ -74,6 +83,9 @@ struct AccountView: View {
                 } label: {
                     Label("Acknowledgments", systemImage: "heart.text.square")
                 }
+            } header: {
+                Text("Legal")
+                    .foregroundStyle(.secondaryText)
             }
             .listRowBackground(Color.surface)
 
@@ -106,6 +118,7 @@ struct AccountView: View {
                     .foregroundStyle(.red)
             } footer: {
                 Text(verbatim: version)
+                    .foregroundStyle(.secondaryText)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 8)
             }
@@ -169,12 +182,12 @@ private struct AccountHeader: View {
                         .font(.display(.title3))
                     Text(email ?? "No email address")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                         .textSelection(.enabled)
                 } else {
                     Text("Signed in as")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                     Text(email ?? "No email address")
                         .font(.headline)
                         .textSelection(.enabled)
