@@ -20,7 +20,24 @@ final class AuthService {
     enum State: Equatable {
         case loading
         case signedOut
+        /// Signed in, but the email hasn't been confirmed yet, so the app stays closed.
+        case unverified(AuthUser)
         case signedIn(AuthUser)
+
+        nonisolated init(user: AuthUser?, isEmailVerified: Bool) {
+            guard let user else {
+                self = .signedOut
+                return
+            }
+            self = isEmailVerified ? .signedIn(user) : .unverified(user)
+        }
+
+        var hasSession: Bool {
+            switch self {
+            case .loading, .signedOut: false
+            case .unverified, .signedIn: true
+            }
+        }
     }
 
     /// Stricter than Firebase's default of 6. Used for both validation and messages.
@@ -36,6 +53,10 @@ final class AuthService {
     /// The new email, when the session ended because an email change went through,
     /// so Login can say why and fill it in. Cleared on the next sign-in.
     private(set) var changedEmail: String?
+
+    /// Whether a confirmation link went out this session, so the screen doesn't claim
+    /// one was sent to accounts made before confirming was required.
+    private(set) var isVerificationSent = false
 
     var currentUser: AuthUser? {
         guard case .signedIn(let user) = state else { return nil }
@@ -54,8 +75,9 @@ final class AuthService {
                 changedEmail = nil
             } else {
                 pendingEmail = nil
+                isVerificationSent = false
             }
-            state = user.map { .signedIn(Self.authUser(from: $0)) } ?? .signedOut
+            state = Self.state(for: user)
         }
     }
 
@@ -67,6 +89,12 @@ final class AuthService {
         } catch {
             Self.logger.error("Registration failed: \(error)")
             throw AuthError(error)
+        }
+        do throws(AuthError) {
+            try await sendEmailVerification()
+        } catch {
+            // The account exists by now, and the confirm screen can send the link again.
+            Self.logger.error("Sending the confirmation after registration failed: \(error)")
         }
         guard !name.isEmpty else { return }
         do throws(AuthError) {
@@ -107,10 +135,40 @@ final class AuthService {
         }
     }
 
+    /// Firebase's default handler page confirms the email when the link is opened, on any device.
+    func sendEmailVerification() async throws(AuthError) {
+        guard let user = Auth.auth().currentUser else { throw .unknown }
+        do {
+            try await user.sendEmailVerification()
+            isVerificationSent = true
+            Self.logger.info("Email confirmation sent")
+        } catch {
+            Self.logger.error("Sending the email confirmation failed: \(error)")
+            throw AuthError(error)
+        }
+    }
+
+    /// Cheaper than `refreshUser`, so it can run every few seconds while the confirm screen waits.
+    /// The session only gets a new token once the email is confirmed, and before `state` opens the
+    /// app, so the recipe listener never starts with a token the security rules would reject.
+    func checkEmailVerification() async {
+        guard let user = Auth.auth().currentUser, !user.isEmailVerified else { return }
+        do {
+            try await user.reload()
+            guard user.isEmailVerified else { return }
+            _ = try await user.getIDTokenResult(forcingRefresh: true)
+            Self.logger.info("Email confirmed")
+            refreshState()
+        } catch {
+            Self.logger.info("Checking the email confirmation failed: \(error)")
+        }
+    }
+
     /// Picks up changes made outside the app, like an email confirmed from its link.
     /// Confirming it ends every session, but Firebase only notices when it next refreshes the
     /// session, up to an hour later. Forcing that refresh now makes it sign out straight away,
-    /// and `state` follows through the listener.
+    /// and `state` follows through the listener. The new token also carries a newly confirmed
+    /// email, which the security rules check.
     func refreshUser() async {
         guard let user = Auth.auth().currentUser else { return }
         do {
@@ -191,7 +249,11 @@ final class AuthService {
         if let pendingEmail, user.email?.caseInsensitiveCompare(pendingEmail) == .orderedSame {
             self.pendingEmail = nil
         }
-        state = .signedIn(Self.authUser(from: user))
+        state = Self.state(for: user)
+    }
+
+    private static func state(for user: User?) -> State {
+        State(user: user.map(authUser(from:)), isEmailVerified: user?.isEmailVerified ?? false)
     }
 
     private static func authUser(from user: User) -> AuthUser {
@@ -201,6 +263,7 @@ final class AuthService {
 
     func logOut() throws(AuthError) {
         pendingEmail = nil
+        isVerificationSent = false
         do {
             try Auth.auth().signOut()
         } catch {

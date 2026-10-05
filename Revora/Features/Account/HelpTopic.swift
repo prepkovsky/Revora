@@ -80,6 +80,10 @@ nonisolated struct HelpTopic: Identifiable, Sendable {
         ]),
         HelpTopic(title: "Your Account", questions: [
             Question(
+                question: "Why do I need to confirm my email?",
+                answer: "So your recipes are tied to an address you can get back into, like when you reset your password. After you create an account, we send a link to your email. Open it, then come back to Revora. If it doesn't arrive, tap Send a New Link."
+            ),
+            Question(
                 question: "I forgot my password. What do I do?",
                 answer: "On Log In, tap Forgot password? and enter your email. We'll send you a link to choose a new password."
             ),

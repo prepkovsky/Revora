@@ -69,7 +69,9 @@ Sections split a recipe into named parts. `title` is missing for the items befor
 
 Cover photos live in Firestore, not Cloud Storage, so the project stays on the free plan. All photo access goes through `RecipePhotoStore`, so a later move to Cloud Storage only changes that one type. Photos are immutable: a new photo gets a new `photoID`, and the old documents are deleted.
 
-Security rules: users can only read and write their own recipes and photos. Photo documents can only be created or deleted, and must hold a single `data` field within the size limit above. The source is `firestore.rules`. It's deployed by hand in the Firebase console, so publish it there after every change.
+Accounts must confirm their email (Firebase's verification link) before the app opens; until then `AuthService.state` is `.unverified`.
+
+Security rules: users can only read and write their own recipes and photos, and only once their email is confirmed. Photo documents can only be created or deleted, and must hold a single `data` field within the size limit above. The source is `firestore.rules`. It's deployed by hand in the Firebase console, so publish it there after every change.
 
 ## Conventions
 

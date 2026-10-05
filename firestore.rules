@@ -3,8 +3,11 @@ rules_version = '2';
 // Deployed by hand: paste into Firebase console → Firestore Database → Rules → Publish.
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Only confirmed emails, so recipes always belong to an address their owner can get back into.
     function isOwner(uid) {
-      return request.auth != null && request.auth.uid == uid;
+      return request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.email_verified == true;
     }
 
     // One JPEG stored as bytes, small enough to keep each user's share of the free tier.

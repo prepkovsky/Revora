@@ -29,6 +29,10 @@ struct RootView: View {
                 .background(.appBackground)
             case .signedOut:
                 AuthFlow()
+            case .unverified(let user):
+                NavigationStack {
+                    VerifyEmailView(email: user.email)
+                }
             case .signedIn(let user):
                 MainTabView()
                     .task(id: user.id) {
@@ -41,10 +45,10 @@ struct RootView: View {
         .task {
             await authService.observeAuthState()
         }
-        // Coming back from the mail app after confirming a new email should log out straight away,
+        // Coming back from the mail app after confirming an email should take effect straight away,
         // not whenever Firebase next refreshes its token, up to an hour later.
         .onChange(of: scenePhase) { _, phase in
-            guard phase == .active, authService.currentUser != nil else { return }
+            guard phase == .active, authService.state.hasSession else { return }
             Task { await authService.refreshUser() }
         }
         // The link may be opened on another device, so the app never goes away and comes back.
