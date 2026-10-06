@@ -25,7 +25,7 @@ describe("countedScan", () => {
   });
 
   test("adds to today's count", () => {
-    assert.deepEqual(countedScan({ day: "2026-10-06", count: 5 }, now), { day: "2026-10-06", count: 6 });
+    assert.deepEqual(countedScan({ day: "2026-10-06", count: 1 }, now), { day: "2026-10-06", count: 2 });
   });
 
   test("starts again on a new day", () => {

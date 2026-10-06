@@ -44,11 +44,17 @@ describe("scannedRecipe", () => {
   test("trims text and joins wrapped lines", () => {
     const recipe = scannedRecipe(reply({
       title: "  Apple\npie ",
-      ingredientSections: [{ title: " For the\n crust ", items: [{ quantity: " 2 ", name: "eggs,\nbeaten  " }] }],
+      ingredientSections: [
+        { title: null, items: [{ quantity: "", name: "salt" }] },
+        { title: " For the\n crust ", items: [{ quantity: " 2 ", name: "eggs,\nbeaten  " }] },
+      ],
       stepSections: [{ title: null, items: [{ text: "Bake  until\r\ngolden.", bullets: ["  apples\t"] }] }],
     }));
     assert.equal(recipe?.title, "Apple pie");
-    assert.deepEqual(recipe?.ingredientSections, [{ title: "For the crust", items: [{ name: "eggs, beaten", quantity: "2" }] }]);
+    assert.deepEqual(recipe?.ingredientSections, [
+      { items: [{ name: "salt", quantity: "" }] },
+      { title: "For the crust", items: [{ name: "eggs, beaten", quantity: "2" }] },
+    ]);
     assert.deepEqual(recipe?.stepSections, [{ items: [{ text: "Bake until golden.", bullets: ["apples"] }] }]);
   });
 
@@ -64,13 +70,17 @@ describe("scannedRecipe", () => {
       ingredientSections: [
         { title: "Empty", items: [] },
         { title: "Sauce", items: [{ quantity: "", name: " " }, { quantity: "1", name: "lemon" }] },
+        { title: "Salad", items: [{ quantity: "", name: "rocket" }] },
       ],
       stepSections: [
         { title: null, items: [{ text: " ", bullets: [] }, { text: "", bullets: ["", "salt"] }] },
         { title: "Blank", items: [{ text: "", bullets: [] }] },
       ],
     }));
-    assert.deepEqual(recipe?.ingredientSections, [{ title: "Sauce", items: [{ name: "lemon", quantity: "1" }] }]);
+    assert.deepEqual(recipe?.ingredientSections, [
+      { title: "Sauce", items: [{ name: "lemon", quantity: "1" }] },
+      { title: "Salad", items: [{ name: "rocket", quantity: "" }] },
+    ]);
     assert.deepEqual(recipe?.stepSections, [{ items: [{ text: "", bullets: ["salt"] }] }]);
   });
 
@@ -87,6 +97,18 @@ describe("scannedRecipe", () => {
       [undefined, ["a"]],
       ["Filling", ["b", "c", "d"]],
     ]);
+  });
+
+  test("drops the title of a lone section, which only labels the whole list", () => {
+    const recipe = scannedRecipe(reply({
+      ingredientSections: [{ title: "Ingredients", items: [{ quantity: "", name: "a" }] }],
+      stepSections: [
+        { title: "Method", items: [{ text: "Mix.", bullets: [] }] },
+        { title: "Empty", items: [] },
+      ],
+    }));
+    assert.deepEqual(recipe?.ingredientSections, [{ items: [{ name: "a", quantity: "" }] }]);
+    assert.deepEqual(recipe?.stepSections, [{ items: [{ text: "Mix.", bullets: [] }] }]);
   });
 
   test("removes step numbers and bullet characters copied from the page", () => {

@@ -39,7 +39,7 @@ The messages are only a fallback: callers should show their own friendly message
 
 ### Daily limit
 
-20 scans per user per UTC day, counted in `scanUsage/{uid}`:
+3 scans per user per UTC day, counted in `scanUsage/{uid}`:
 
 ```
 scanUsage/{uid}   day: "2026-10-06", count: Int, expiresAt: Timestamp (the next UTC midnight)
@@ -59,12 +59,12 @@ One request to OpenAI's Responses API with plain `fetch` (no OpenAI SDK):
 
 - **Model:** `recipeModel` in `openai.ts` (`gpt-6-luna`). Change it there when a better or cheaper one comes out.
 - **Structured output** in strict mode (`recipeSchema` in `recipe.ts`), with an `isRecipe` flag so the model can say there's no recipe instead of inventing one.
-- **Instructions** (`recipeInstructions`): copy the recipe as written, in its own language, without translating or adding anything; sections only where the recipe has headings.
+- **Instructions** (`recipeInstructions`): copy the recipe as written, in its own language, without translating or adding anything; sections only where the recipe groups its ingredients or steps under headings; a quantity only when the line starts with one ("Juice of 1 lemon" stays whole).
 - **`detail: "original"`**, so small print isn't scaled down.
 - **`store: false`**, so OpenAI doesn't keep the response for later use.
 - **`safety_identifier`:** a SHA-256 hash of the user ID, so OpenAI can tie abuse to one user instead of the whole account without learning who it is.
 
-The answer is cleaned up like the editor does when saving: text is trimmed and kept to one line, blank items, bullets and empty sections are dropped, step numbers and bullet characters copied from the page are removed, and meals are put in `MealType`'s order. A section without a title that follows a named one joins it, the way the editor groups rows.
+The answer is cleaned up like the editor does when saving: text is trimmed and kept to one line, blank items, bullets and empty sections are dropped, step numbers and bullet characters copied from the page are removed, and meals are put in `MealType`'s order. A section without a title that follows a named one joins it, the way the editor groups rows. A lone section loses its title, since a heading like "Method" only labels the whole list.
 
 ### Limits
 

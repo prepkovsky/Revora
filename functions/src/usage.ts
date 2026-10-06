@@ -1,5 +1,5 @@
 /** Scans per user per UTC day. Each one is a paid OpenAI request. */
-export const dailyScanLimit = 20;
+export const dailyScanLimit = 3;
 
 /** A user's count in `scanUsage/{uid}`, for one UTC day. */
 export interface ScanUsage {

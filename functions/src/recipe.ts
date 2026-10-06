@@ -29,11 +29,11 @@ export interface ScannedRecipe {
 
 export const recipeInstructions = `You read recipes from photos: cookbook pages, recipe cards, handwritten notes and screenshots.
 
-Copy the recipe as written, in its original language. Don't translate, summarize, correct or add anything, and don't invent quantities or steps that aren't there.
+Copy the recipe as written, in its original language. Don't translate, summarize, correct or add anything, and don't invent quantities or steps that aren't there. Where handwriting or print is hard to read, write your best reading, without brackets, question marks or notes.
 
 - title: the recipe's name as written. Only if it has none, a short plain name for the dish in the recipe's language.
-- ingredientSections and stepSections: use several sections only when the recipe groups its ingredients or steps under headings, like "For the sauce". Otherwise put everything in one section with title null.
-- Each ingredient: quantity is the amount with its unit ("200 g", "2 tbsp", "a pinch"), or "" when there's none. name is the rest, including notes like "finely chopped".
+- ingredientSections and stepSections: use several sections only when the recipe groups its ingredients or steps under headings, like "For the sauce" and "For the pasta". Otherwise put everything in one section with title null. A heading that only labels the whole list, like "Ingredients" or "Method", isn't a section.
+- Each ingredient: when the line starts with an amount, quantity is that amount with its unit ("200 g", "2 tbsp", "a pinch") and name is the rest, including notes like "finely chopped". When it doesn't, like "Juice of 1 lemon" or "Salt to taste", quantity is "" and name is the whole line.
 - Each step: its text as one paragraph, without the step number or bullet character. Join lines that only wrap because of the page layout. bullets is for a list printed under the step, like the ingredients it adds; usually it's empty.
 - mealTypes: the meals the recipe is clearly meant for, or none.
 - If the photo shows several recipes, read the most prominent one.
@@ -120,6 +120,8 @@ export function scannedRecipe(reply: unknown): ScannedRecipe | null {
 /**
  * Drops blank items and sections left empty. A section whose title is blank joins the
  * section above, the way the editor groups rows, so only the first one can be untitled.
+ * A lone section loses its title: it labels the whole list, like "Method", and the app
+ * would show it as a numbered section of one.
  */
 function sections<Item>(value: unknown, item: (value: unknown) => Item | null): RecipeSection<Item>[] {
   const result: RecipeSection<Item>[] = [];
@@ -138,7 +140,8 @@ function sections<Item>(value: unknown, item: (value: unknown) => Item | null): 
       result.push(title === "" ? { items } : { title, items });
     }
   }
-  return result;
+  const only = result.length === 1 ? result[0] : undefined;
+  return only?.title === undefined ? result : [{ items: only.items }];
 }
 
 /** The editor keeps each field on one line, so line breaks and runs of spaces become single spaces. */
