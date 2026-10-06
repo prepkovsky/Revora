@@ -6,7 +6,7 @@ The main choices behind Revora and why they were made. Check here before changin
 
 - **iOS and iPadOS 18 and later**, built with Xcode 27. That keeps older devices supported. Newer APIs are guarded with `#available`.
 - **Swift 6 with default MainActor isolation.** Turned on while the project was empty, when it cost nothing. App code runs on the main actor unless it says otherwise, which removes most concurrency noise in a SwiftUI app.
-- **Only FirebaseAuth and FirebaseFirestore**, and no other dependencies. Each extra Firebase product is a deliberate choice, so ask before adding one.
+- **Only FirebaseAuth, FirebaseFirestore and FirebaseFunctions**, and no other dependencies. Each extra Firebase product is a deliberate choice, so ask before adding one. FirebaseFunctions came with recipe scanning, rather than calling the function with `URLSession`: it handles the login token and error codes, and will send App Check tokens on its own.
 - **`GoogleService-Info.plist` stays out of git.** It holds no real secret, since the rules protect the data, but keeping it out stops key scanners from flagging the repo. The cost is that a fresh clone needs the file added before it builds.
 - **The rules are published by hand** in the Firebase console. There's one small rules file, so `firebase.json` only configures the Cloud Functions, and deploying them never touches the rules.
 

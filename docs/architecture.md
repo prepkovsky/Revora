@@ -32,11 +32,12 @@ firestore.rules     Firestore security rules, published by hand
 | `AuthService` | The auth state, and everything to do with the account: register, log in, log out, confirm email, reset password, name, email and password changes, deleting the account. Maps Firebase errors to `AuthError`. |
 | `RecipeRepository` | A live listener on the signed-in user's recipes, plus create, update, favorite, mark opened and delete. Maps errors to `RecipeError`. |
 | `RecipePhotoStore` | Resizes, saves, loads and deletes cover photos, with an in-memory cache. Maps errors to `PhotoError`. |
+| `RecipeScanner` | Shrinks a photo and sends it to the `scanRecipe` [Cloud Function](functions.md), which reads the recipe in it. Returns a `ScannedRecipe` for the editor and saves nothing. Maps errors to `ScanError`. Waits up to 100 seconds, not `withTimeout`'s 15. |
 | `Connectivity` | Whether the device is online, for the offline badge and for retrying photos. Never blocks anything. |
 
 Smaller pieces in `Services/`:
 
-- `PhotoProcessor` turns a picked image into a full-size JPEG and a thumbnail (see [Data and security](data-and-security.md#photos)).
+- `PhotoProcessor` turns a picked image into a full-size JPEG and a thumbnail (see [Data and security](data-and-security.md#photos)), or into one larger JPEG for scanning (2048 px, at most 1.5 MiB, so small print stays readable).
 - `EmailRateLimit` and `SentVerifications` keep a little state in `UserDefaults` about emails the app has asked Firebase to send (see [Auth](features/auth.md#email-limits)).
 - `withTimeout` gives up on a request after 15 seconds (see [Concurrency](#concurrency)).
 

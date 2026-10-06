@@ -97,5 +97,28 @@ struct PhotoProcessorTests {
         #expect(throws: PhotoError.unreadableImage) {
             try PhotoProcessor.prepare(Data("not a photo".utf8))
         }
+        #expect(throws: PhotoError.unreadableImage) {
+            try PhotoProcessor.prepareForScan(Data("not a photo".utf8))
+        }
+    }
+
+    @Test func scanPhotosAreLargerThanCoverPhotos() throws {
+        let scan = try PhotoProcessor.prepareForScan(jpeg(width: 4032, height: 3024))
+        let size = try pixelSize(of: scan)
+        #expect(size.width == PhotoProcessor.scanMaxPixelSize)
+        #expect(abs(Double(size.width) / Double(size.height) - 4.0 / 3.0) < 0.01)
+    }
+
+    @Test func scanPhotosFitTheFunctionsLimit() throws {
+        let scan = try PhotoProcessor.prepareForScan(jpeg(width: 4000, height: 3000, noise: true))
+        #expect(scan.count <= PhotoProcessor.scanMaxBytes)
+        #expect(scan.starts(with: [0xFF, 0xD8, 0xFF]))
+    }
+
+    @Test func scanPhotosNeverUpscaleAndDropLocation() throws {
+        let gps: [CFString: Any] = [kCGImagePropertyGPSLatitude: 48.15, kCGImagePropertyGPSLatitudeRef: "N"]
+        let scan = try PhotoProcessor.prepareForScan(jpeg(width: 800, height: 600, properties: [kCGImagePropertyGPSDictionary: gps]))
+        #expect(try pixelSize(of: scan) == (800, 600))
+        #expect(try properties(of: scan)[kCGImagePropertyGPSDictionary] == nil)
     }
 }

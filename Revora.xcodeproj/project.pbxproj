@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		F4860711306AAAF800A7E50F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = F4860712306AAAF800A7E50F /* FirebaseAuth */; };
 		F4860713306AAAF800A7E50F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = F4860714306AAAF800A7E50F /* FirebaseFirestore */; };
+		F4860715306AAAF800A7E50F /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = F4860716306AAAF800A7E50F /* FirebaseFunctions */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 			files = (
 				F4860711306AAAF800A7E50F /* FirebaseAuth in Frameworks */,
 				F4860713306AAAF800A7E50F /* FirebaseFirestore in Frameworks */,
+				F4860715306AAAF800A7E50F /* FirebaseFunctions in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -127,6 +129,7 @@
 			packageProductDependencies = (
 				F4860712306AAAF800A7E50F /* FirebaseAuth */,
 				F4860714306AAAF800A7E50F /* FirebaseFirestore */,
+				F4860716306AAAF800A7E50F /* FirebaseFunctions */,
 			);
 			productName = Revora;
 			productReference = F48606FB306AAAF800A7E50F /* Revora.app */;
@@ -488,6 +491,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F4860710306AAAF800A7E50F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		F4860716306AAAF800A7E50F /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F4860710306AAAF800A7E50F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

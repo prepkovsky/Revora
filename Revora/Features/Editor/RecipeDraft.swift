@@ -139,19 +139,43 @@ struct RecipeDraft: Equatable {
 extension RecipeDraft {
     /// Prefilled for editing a saved recipe.
     init(recipe: Recipe) {
-        title = recipe.title
+        self.init(
+            title: recipe.title,
+            ingredientSections: recipe.ingredientSections,
+            stepSections: recipe.stepSections,
+            mealTypes: recipe.mealTypes
+        )
+        photo = recipe.photoID.map { .saved(photoID: $0, recipeID: recipe.id) }
+    }
+
+    /// Prefilled from a scanned photo, for a new recipe. The scanned photo isn't its cover photo.
+    init(scanned recipe: ScannedRecipe) {
+        self.init(
+            title: recipe.title,
+            ingredientSections: recipe.ingredientSections,
+            stepSections: recipe.stepSections,
+            mealTypes: recipe.mealTypes
+        )
+    }
+
+    private init(
+        title: String,
+        ingredientSections: [RecipeSection<Ingredient>],
+        stepSections: [RecipeSection<Step>],
+        mealTypes: [MealType]
+    ) {
+        self.title = title
         ingredients = rows(
-            from: recipe.ingredientSections,
+            from: ingredientSections,
             section: { IngredientRow(isSection: true, name: $0) },
             item: { IngredientRow(quantity: $0.quantity, name: $0.name) }
         )
         steps = rows(
-            from: recipe.stepSections,
+            from: stepSections,
             section: { StepRow(isSection: true, text: $0) },
             item: { StepRow(text: $0.text, bullets: $0.bullets.map { BulletRow(text: $0) }) }
         )
-        photo = recipe.photoID.map { .saved(photoID: $0, recipeID: recipe.id) }
-        mealTypes = Set(recipe.mealTypes)
+        self.mealTypes = Set(mealTypes)
     }
 
     /// The recipe with this draft's edits. Fields the editor doesn't show, like favorites, stay as they are.

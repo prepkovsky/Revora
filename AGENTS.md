@@ -8,7 +8,7 @@ This file is the short rule sheet. The details are in [`docs/`](docs/documentati
 
 - SwiftUI, iOS/iPadOS 18+ (deployment target), built with Xcode 27. Guard newer APIs with `#available`.
 - **Swift 6** language mode with **default MainActor isolation** and approachable concurrency (set in build settings)
-- Firebase via Swift Package Manager: **FirebaseAuth** and **FirebaseFirestore** only. Don't add other Firebase products without asking.
+- Firebase via Swift Package Manager: **FirebaseAuth**, **FirebaseFirestore** and **FirebaseFunctions** only. Don't add other Firebase products without asking.
 - No other third-party dependencies in the app.
 - Cloud Functions in `functions/`: TypeScript on Node 22, with only `firebase-admin` and `firebase-functions`. OpenAI is called with plain `fetch`. See [Cloud Functions](docs/functions.md).
 
@@ -41,7 +41,7 @@ The app needs `Revora/GoogleService-Info.plist` to build and run. It is gitignor
 ```
 Revora/
 ├── App/            App entry point, root view (auth vs. main tabs), navigation, appearance
-├── Services/       AuthService, RecipeRepository, RecipePhotoStore (Firebase wrappers), Connectivity, error types
+├── Services/       AuthService, RecipeRepository, RecipePhotoStore, RecipeScanner (Firebase wrappers), Connectivity, error types
 ├── Models/         Recipe, RecipeSection, Ingredient, Step, MealType
 ├── Features/       One folder per screen area: Auth, Home, Recipes, Editor, Account
 ├── Components/     Shared reusable views
@@ -60,7 +60,7 @@ docs/               Developer documentation
 See [Architecture](docs/architecture.md) and [Data and security](docs/data-and-security.md).
 
 - `@Observable` models and services, injected through the SwiftUI environment.
-- Views don't talk to Firebase directly. They go through `AuthService`, `RecipeRepository` and `RecipePhotoStore`.
+- Views don't talk to Firebase directly. They go through `AuthService`, `RecipeRepository`, `RecipePhotoStore` and `RecipeScanner`.
 - One `NavigationStack` per tab. Native `TabView` with three tabs: Home, Recipes and Account. New recipes open the editor as a sheet.
 - Recipe and photo writes go to Firestore's local cache and aren't awaited, so they work offline. Awaited Firebase calls go through `withTimeout`.
 - Accounts must confirm their email before the app opens (`AuthService.state` is `.unverified` until then), and the security rules require it too.

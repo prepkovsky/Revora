@@ -22,7 +22,8 @@ Unit tests live in `RevoraTests/` and use **Swift Testing**. They cover logic th
 | Forms | `RegisterFormTests`, `LoginFormTests`, `ChangePasswordFormTests`, `ProfileTests` (name and change email) |
 | Errors | `AuthErrorTests`, `RecipeErrorTests`, `PhotoErrorTests`: Firebase codes map to the right friendly message |
 | Auth state | `AuthStateTests`, `SentVerificationsTests`, `EmailRateLimitTests` (cooldown, hourly cap, hashing, a clock turned back) |
-| Photos | `PhotoProcessorTests`: sizes, aspect ratio, no upscaling, orientation, size limits, no location metadata |
+| Photos | `PhotoProcessorTests`: sizes, aspect ratio, no upscaling, orientation, size limits, no location metadata, for cover photos and scans |
+| Scanning | `ScanErrorTests` (every function error code, when the daily limit resets, connection failures), `ScannedRecipeTests` (the function's reply, unknown meals, the editor draft it fills in) |
 | Other | `TimeoutTests`, `AppNavigationTests`, `AppearanceTests`, `LegalTextTests` (parsing and every page in the bundle), `HelpTopicTests`, `DisplayFontTests` (the fonts are registered) |
 
 ### Writing tests
@@ -36,7 +37,7 @@ Unit tests live in `RevoraTests/` and use **Swift Testing**. They cover logic th
 
 On purpose:
 
-- **Anything that needs Firebase:** `AuthService`, `RecipeRepository`, `RecipePhotoStore` and the security rules. The Firebase Emulator Suite could test those, but it needs Node and Java, so it's left out for now.
+- **Anything that needs Firebase:** `AuthService`, `RecipeRepository`, `RecipePhotoStore`, `RecipeScanner` and the security rules. The Cloud Functions have their own tests (see [Cloud Functions](functions.md#tests)). The Firebase Emulator Suite could test those, but it needs Node and Java, so it's left out for now.
 - **Views and layouts.** There are no UI or snapshot tests.
 - **`Connectivity`**, which wraps `NWPathMonitor`.
 

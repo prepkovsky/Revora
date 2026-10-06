@@ -6,6 +6,7 @@ struct RevoraApp: App {
     @State private var authService = AuthService()
     @State private var recipeRepository = RecipeRepository()
     @State private var photoStore = RecipePhotoStore()
+    @State private var recipeScanner = RecipeScanner()
     @State private var connectivity = Connectivity()
 
     init() {
@@ -18,6 +19,7 @@ struct RevoraApp: App {
                 .environment(authService)
                 .environment(recipeRepository)
                 .environment(photoStore)
+                .environment(recipeScanner)
                 .environment(connectivity)
         }
     }

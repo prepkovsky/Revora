@@ -8,7 +8,7 @@ How to build and run Revora from a fresh clone.
 - An iOS or iPadOS 18 (or later) simulator or device
 - A Firebase project. The free Spark plan is enough.
 
-Firebase comes in through Swift Package Manager (FirebaseAuth and FirebaseFirestore from `firebase-ios-sdk`). There are no other dependencies.
+Firebase comes in through Swift Package Manager (FirebaseAuth, FirebaseFirestore and FirebaseFunctions from `firebase-ios-sdk`). There are no other dependencies.
 
 ## Set up Firebase
 
