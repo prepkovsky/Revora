@@ -33,7 +33,7 @@ New accounts must confirm their email before the app opens. Until then `AuthServ
 
 ## Email limits
 
-Firebase's free plan allows about 150 password resets a day for the whole project, and 1,000 each of verification and email-change emails. A few quick taps, or one person on purpose, could use up the day's resets for everyone. So the app holds back before asking Firebase to send one (`EmailRateLimit`):
+Firebase sends a limited number of emails a day for the whole project: on the Blaze plan, 10,000 password resets and email changes and 100,000 verification emails (150, 1,000 and 1,000 on the free plan). A few quick taps, or one person on purpose, could flood an inbox or use up the day's emails for everyone. So the app holds back before asking Firebase to send one (`EmailRateLimit`):
 
 | Kind | Same address | Per device, per hour |
 |---|---|---|

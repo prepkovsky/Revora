@@ -6,6 +6,8 @@ struct RecipesView: View {
     @Environment(AppNavigation.self) private var navigation
 
     @State private var isShowingEditor = false
+    @State private var scanSource: ScanPhotoSource?
+    @State private var scanPhoto: ScanPhoto?
     @State private var recipeToDelete: Recipe?
     @State private var deleteError: RecipeError?
     @State private var favoriteError: RecipeError?
@@ -21,13 +23,29 @@ struct RecipesView: View {
             .navigationTitle("Recipes")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button("New Recipe", systemImage: "plus") {
-                        isShowingEditor = true
+                    Menu("Add Recipe", systemImage: "plus") {
+                        Button("New Recipe", systemImage: "square.and.pencil") {
+                            isShowingEditor = true
+                        }
+                        Section("Scan a Recipe") {
+                            if CameraPicker.isAvailable {
+                                Button("Take Photo", systemImage: "camera") {
+                                    scanSource = .camera
+                                }
+                            }
+                            Button("Choose from Library", systemImage: "photo.on.rectangle") {
+                                scanSource = .library
+                            }
+                        }
                     }
                 }
             }
             .sheet(isPresented: $isShowingEditor) {
                 RecipeEditorView()
+            }
+            .scanPhotoPicker($scanSource) { scanPhoto = $0 }
+            .sheet(item: $scanPhoto) { photo in
+                ScanRecipeView(photo: photo)
             }
             .navigationDestination(for: Recipe.self) { recipe in
                 RecipeDetailView(recipeID: recipe.id)
@@ -255,6 +273,7 @@ struct RecipesView: View {
     }
     .environment(RecipeRepository())
     .environment(RecipePhotoStore())
+    .environment(RecipeScanner())
     .environment(Connectivity())
     .environment(AppNavigation())
 }

@@ -41,7 +41,7 @@ Recipes saved before sections existed have `ingredients [{ name, quantity }]` an
 
 ## Photos
 
-Cover photos live in Firestore, not Cloud Storage, so the project stays on the free Spark plan (Cloud Storage needs the paid Blaze plan). Each photo is two documents with a single `data` field: a full-size JPEG and a thumbnail. They're separate documents so lists and cards only download thumbnails.
+Cover photos live in Firestore, not Cloud Storage. That kept the project on the free Spark plan when photos were added, since Cloud Storage needs the paid Blaze plan. The project has since moved to Blaze for recipe scanning, and photos stayed where they were. Each photo is two documents with a single `data` field: a full-size JPEG and a thumbnail. They're separate documents so lists and cards only download thumbnails.
 
 `PhotoProcessor` prepares them on the device, off the main actor:
 
@@ -87,15 +87,16 @@ The rules are **deployed by hand**. After every change to `firestore.rules`:
 
 The privacy manifest (`Revora/PrivacyInfo.xcprivacy`) declares the `UserDefaults` use (reason `CA92.1`) and the data the app collects. See [Release](release.md#privacy).
 
-## Free plan limits
+## Plan and limits
 
-The project runs on Firebase's free Spark plan, so it can't run up a bill. Its daily allowances are shared by everyone using the app:
+The project is on Firebase's **Blaze** plan, which the [Cloud Functions](functions.md) need. Blaze keeps the free daily allowances, and bills for use past them instead of stopping. A Google Cloud budget alert and an OpenAI spending limit are set (see [Setup](functions.md#setup)).
 
-- **Firestore:** 50,000 reads, 20,000 writes and 20,000 deletes a day, and 1 GiB stored. When the quota runs out, loads fail with `resourceExhausted`, which the app shows as "Revora has reached its limit for today".
-- **Emails:** about 150 password resets and 1,000 verification or email-change emails a day, for the whole project. See [Auth](features/auth.md#email-limits) for how the app holds back.
+- **Firestore:** 50,000 reads, 20,000 writes and 20,000 deletes a day, and 1 GiB stored, at no cost. Past that, Firestore bills for what's used instead of failing. If a load ever fails with `resourceExhausted`, the app shows "Revora has reached its limit for today".
+- **Emails:** 10,000 password resets, 10,000 email changes and 100,000 verification emails a day, for the whole project (the free plan allows 150, 1,000 and 1,000). See [Auth](features/auth.md#email-limits) for how the app holds back.
 - **Sign-ups:** Firebase allows 100 new accounts an hour from one IP address. The console can only raise that for a while, not lower it.
+- **Scans:** 3 per user a day, counted by the function (see [Daily limit](functions.md#daily-limit)).
 
 ### Known gaps
 
-- **No write limits in the rules.** Rules can't count requests, so only the free plan's daily quota limits how much an account writes. App Check, which needs a paid Apple Developer account, makes Firebase accept requests only from the real app (see [Release](release.md#app-check)).
+- **No write limits in the rules.** Rules can't count requests, so nothing in Firebase limits how much one account writes. On Blaze that costs money rather than hitting a quota, which is what the budget alert is for. App Check, which needs a paid Apple Developer account, makes Firebase accept requests only from the real app (see [Release](release.md#app-check)).
 - **Orphaned photos.** If deleting a recipe's photo fails, the photo documents stay behind under a deleted recipe. Nothing points at them, but deleting the account doesn't find them either, because the app can't list the subcollections of a deleted document. Finding them would need a collection-group query and a rules change.

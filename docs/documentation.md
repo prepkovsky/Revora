@@ -6,7 +6,7 @@ Developer documentation for Revora, a recipe app for iPhone and iPad built with 
 
 1. [Getting started](getting-started.md): set up Firebase, build, run and test.
 2. [Architecture](architecture.md): folders, services, navigation, concurrency and offline.
-3. [Data and security](data-and-security.md): what's stored in Firestore, photos, the security rules and how to publish them, and the free plan's limits.
+3. [Data and security](data-and-security.md): what's stored in Firestore, photos, the security rules and how to publish them, and the plan's limits.
 
 ## Features
 
@@ -16,6 +16,7 @@ How each part of the app behaves, including what the code doesn't make obvious.
 - [Home](features/home.md): the greeting, Continue Cooking, Surprise Me and the recipe rows.
 - [Recipes](features/recipes.md): the list, its filters and search, and the recipe page.
 - [Editor](features/editor.md): creating and editing recipes, sections and bullets, photos, and saving.
+- [Scanning](features/scanning.md): filling in a recipe from a photo, the scan screen and its errors.
 - [Account](features/account.md): name, email and password changes, appearance, help, legal pages and deleting the account.
 
 ## Reference

@@ -6,7 +6,7 @@ How to build and run Revora from a fresh clone.
 
 - A Mac with Xcode 27
 - An iOS or iPadOS 18 (or later) simulator or device
-- A Firebase project. The free Spark plan is enough.
+- A Firebase project. The free Spark plan runs everything except recipe scanning, whose [Cloud Function](functions.md) needs the Blaze plan.
 
 Firebase comes in through Swift Package Manager (FirebaseAuth, FirebaseFirestore and FirebaseFunctions from `firebase-ios-sdk`). There are no other dependencies.
 
@@ -53,6 +53,10 @@ xcodebuild -project Revora.xcodeproj -scheme Revora \
 Any iPhone simulator on iOS 18 or later works. The tests use Swift Testing and never call Firebase. See [Testing](testing.md).
 
 If Xcode is open and resolving packages at the same time, add `-clonedSourcePackagesDirPath <tmp dir>` to avoid cache conflicts.
+
+## Set up recipe scanning
+
+Scanning needs the `scanRecipe` Cloud Function, an OpenAI API key and the Blaze plan. Without them, the app works the same except that a scan fails with "Scanning isn't working right now". See [Cloud Functions](functions.md#setup).
 
 ## Next
 

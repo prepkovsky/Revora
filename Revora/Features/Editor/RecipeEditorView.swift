@@ -22,6 +22,7 @@ struct RecipeEditorView: View {
 
     /// The recipe being edited, or `nil` for a new one.
     private let recipe: Recipe?
+    private let isScanned: Bool
     private let originalDraft: RecipeDraft
     @State private var draft: RecipeDraft
     @State private var isPreparingPhoto = false
@@ -53,14 +54,32 @@ struct RecipeEditorView: View {
 
     init(recipe: Recipe? = nil) {
         self.recipe = recipe
+        isScanned = false
         let draft = recipe.map(RecipeDraft.init(recipe:)) ?? RecipeDraft()
         originalDraft = draft
         _draft = State(initialValue: draft)
     }
 
+    /// A new recipe filled in from a scan. Compared with an empty draft, so Cancel asks before throwing the scan away.
+    init(scanned: ScannedRecipe) {
+        recipe = nil
+        isScanned = true
+        originalDraft = RecipeDraft()
+        _draft = State(initialValue: RecipeDraft(scanned: scanned))
+    }
+
     var body: some View {
         NavigationStack {
             Form {
+                if isScanned {
+                    Section {
+                        Label("Check the recipe before you save it. Scanning can misread small print and handwriting.", systemImage: "text.viewfinder")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondaryText)
+                    }
+                    .listRowBackground(Color.clear)
+                }
+
                 EditorPhotoSection(photo: $draft.photo, isPreparing: $isPreparingPhoto)
 
                 Section {
@@ -197,7 +216,8 @@ struct RecipeEditorView: View {
                 Text(message)
             }
             .onAppear {
-                if recipe == nil {
+                // A scanned recipe is already filled in, and the keyboard would cover it.
+                if recipe == nil && draft.trimmedTitle.isEmpty {
                     focusedField = .title
                 }
             }

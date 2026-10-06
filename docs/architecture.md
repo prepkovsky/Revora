@@ -84,7 +84,7 @@ Firestore keeps a copy of the user's recipes on the device, so the app keeps wor
 
 - A quiet **Offline** badge sits in the navigation bar of each tab root. Tapping it explains that changes will sync.
 - Photos load from the device's cache first. One that hasn't been downloaded shows the placeholder, and loads once the device is back online.
-- Account actions (log in, email changes, deleting the account) need a connection and say so.
-- If the recipe listener fails (for example when the free plan's daily quota is used up), Home and Recipes show "Couldn't Load Recipes" with **Try Again**, instead of loading forever.
+- Account actions (log in, email changes, deleting the account) and scanning a recipe need a connection and say so.
+- If the recipe listener fails (for example when a Firestore quota is used up), Home and Recipes show "Couldn't Load Recipes" with **Try Again**, instead of loading forever.
 
 `NWPathMonitor` doesn't always report the connection coming back (the Simulator's never does), so while offline, `Connectivity` starts a fresh monitor every 3 seconds.

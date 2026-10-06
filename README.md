@@ -7,6 +7,7 @@
 ### Write recipes your way
 
 - Add a title, ingredients and steps, and a cover photo from your library or camera.
+- Or scan one: take a photo of a cookbook page or a handwritten card, and Revora fills in the recipe for you to check.
 - Split long recipes into parts, like "For the dough" and "For the filling". Step sections are numbered, and you can add bullet points under any step.
 - Tag recipes as breakfast, lunch, dinner, snack, dessert or drink.
 - Type a whole recipe in one go: Return moves you on to the next field.
@@ -35,6 +36,7 @@ Your recipes are yours. Only you can see them: they're tied to your account, and
 
 - No ads and no tracking.
 - Photos are shrunk on your device before they're saved, and their location is removed.
+- Scanned photos are only used to read the recipe, and aren't kept.
 - Delete your account at any time, and your recipes and photos go with it.
 
 Read the full Privacy Policy in the app, under Account → Legal.

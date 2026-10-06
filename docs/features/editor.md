@@ -1,6 +1,6 @@
 # Editor
 
-`RecipeEditorView` creates and edits recipes. It opens as a sheet from Recipes' `+`, Home's **New Recipe**, and **Edit** on a recipe page. The code is in `Features/Editor/`.
+`RecipeEditorView` creates and edits recipes. It opens as a sheet from **New Recipe** in Recipes' `+` menu, Home's **New Recipe**, **Edit** on a recipe page, and filled in after a [scan](scanning.md). The code is in `Features/Editor/`.
 
 ## Layout
 

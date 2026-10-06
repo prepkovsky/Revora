@@ -1,4 +1,4 @@
-*Last updated: October 3, 2026*
+*Last updated: October 6, 2026*
 
 These terms apply when you use Revora. By creating an account, you agree to them.
 
@@ -13,13 +13,21 @@ Your recipes and photos stay yours. Revora only uses them to store them and show
 
 Only add content you have the right to use, such as your own photos or photos you have permission to use.
 
+## Scanning recipes
+
+Scanning reads a photo with an AI service from OpenAI, and it can make mistakes, like a wrong quantity or a misread word. Check a scanned recipe before you save it and cook from it.
+
+- Only scan recipes you have the right to use, such as your own, or a cookbook you own for your personal use.
+- Don't scan photos that are harmful or illegal, or that break [OpenAI's usage policies](https://openai.com/policies/usage-policies). Such photos can't be scanned, and they may lead to your account being suspended.
+- Scanning has a daily limit, and it may change or be unavailable at times.
+
 ## Fair use
 
 Please don't misuse Revora. For example, don't try to reach other people's data, interfere with the service or overload it, or use it for anything illegal.
 
 ## Cooking safely
 
-Recipes in Revora are your own, and the app doesn't check them. Take care with food safety, cooking times and allergies, especially when cooking for others.
+Recipes in Revora are your own, whether you typed or scanned them, and the app doesn't check them. Take care with food safety, cooking times and allergies, especially when cooking for others.
 
 ## The service
 

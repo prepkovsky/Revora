@@ -19,7 +19,15 @@ nonisolated struct HelpTopic: Identifiable, Sendable {
         HelpTopic(title: "Recipes", questions: [
             Question(
                 question: "How do I add a recipe?",
-                answer: "Tap + at the top of Recipes, or New Recipe on Home. Only a title is needed, so you can fill in the rest later."
+                answer: "Tap + at the top of Recipes and choose New Recipe, or tap New Recipe on Home. Only a title is needed, so you can fill in the rest later."
+            ),
+            Question(
+                question: "Can Revora fill in a recipe from a photo?",
+                answer: "Yes. Tap + at the top of Recipes, then Take Photo or Choose from Library under Scan a Recipe. Revora reads the recipe, in the language it's written in, and opens it in the editor. Check it, fix anything it misread, then tap Save. It works with cookbook pages, recipe cards, handwriting and screenshots. You can scan 3 recipes a day, and scanning needs a connection."
+            ),
+            Question(
+                question: "Why couldn't Revora read my photo?",
+                answer: "Try a sharp photo in good light, with the whole recipe in the frame and the text the right way up. If a photo shows several recipes, Revora reads the most prominent one. A photo without a recipe in it can't be scanned."
             ),
             Question(
                 question: "How do I edit or delete a recipe?",
@@ -75,7 +83,7 @@ nonisolated struct HelpTopic: Identifiable, Sendable {
             ),
             Question(
                 question: "Can I use Revora offline?",
-                answer: "Yes. Recipes you've already seen open without a connection, and new recipes and edits are saved on your device, then synced once you're back online. Until then, Offline shows at the top of the screen. Logging in and changes to your account need a connection."
+                answer: "Yes. Recipes you've already seen open without a connection, and new recipes and edits are saved on your device, then synced once you're back online. Until then, Offline shows at the top of the screen. Logging in, scanning recipes and changes to your account need a connection."
             ),
         ]),
         HelpTopic(title: "Your Account", questions: [
@@ -108,6 +116,10 @@ nonisolated struct HelpTopic: Identifiable, Sendable {
             Question(
                 question: "Who can see my recipes?",
                 answer: "Only you. Your recipes and photos are private to your account."
+            ),
+            Question(
+                question: "What happens to photos I scan?",
+                answer: "The photo is sent to OpenAI, which reads the recipe in it. Revora doesn't keep the photo or add it to your recipe. OpenAI doesn't use it to train its models, and may keep it for up to 30 days to check for misuse before deleting it. Your name and email aren't sent with it."
             ),
             Question(
                 question: "Does Revora show ads or track me?",

@@ -12,10 +12,10 @@ The main choices behind Revora and why they were made. Check here before changin
 
 ## Data
 
-- **Photos live in Firestore, not Cloud Storage.** Cloud Storage needs the paid Blaze plan, which needs a card on file. Firestore keeps the project on the free plan, at the cost of smaller photos (documents max out at 1 MiB). All photo access goes through `RecipePhotoStore`, so moving to Cloud Storage later means one new implementation and a one-time migration.
+- **Photos live in Firestore, not Cloud Storage.** Cloud Storage needed the paid Blaze plan, which needs a card on file, and Firestore kept the project on the free plan, at the cost of smaller photos (documents max out at 1 MiB). The project moved to Blaze later for recipe scanning, and photos stayed in Firestore. All photo access goes through `RecipePhotoStore`, so moving to Cloud Storage later means one new implementation and a one-time migration.
 - **One cover photo per recipe.** It covers most of the value (list rows, Home cards, the recipe page) with one picker. A gallery or photos per step can come later.
 - **Photos never change.** A new photo gets a new ID. The device's cache never goes stale, and replacing one is "save new, point at it, delete old".
-- **Photos are resized on the device.** Small files upload quickly on cellular, keep usage within the free plan, and re-encoding drops location metadata.
+- **Photos are resized on the device.** Small files upload quickly on cellular, keep usage within the free allowances, and re-encoding drops location metadata.
 - **Photos load through the SDK, never download URLs.** A download URL works for anyone who has it and skips the rules. Recipes are private.
 - **Writes aren't awaited.** Firestore saves to the device and syncs in the background. Awaiting the server would leave Save spinning forever offline. Deleting the account is the one exception (see [Account](features/account.md#delete-account)).
 - **Recipe IDs are made on the device**, so the editor knows the ID before saving, and a photo can be saved under it first.
@@ -44,7 +44,7 @@ The main choices behind Revora and why they were made. Check here before changin
 
 ## Limits
 
-- **The app limits how often it asks for emails** (60 seconds per address, and a few per hour). The free plan's reset emails are shared by everyone, so a few taps shouldn't use them up.
+- **The app limits how often it asks for emails** (60 seconds per address, and a few per hour). Firebase's daily email allowance is shared by everyone, so a few taps shouldn't use it up or flood someone's inbox.
 - **No log-in backoff in the app.** Firebase's own lockout runs on its server, so it applies however the request arrives.
 - **No rate limits in the Firestore rules.** Rules can't count requests. A gap between writes or a recipe cap would need extra documents kept in step with every write, doubling the writes for little gain. **App Check** is the real fix, and it waits for a paid Apple Developer account (see [Release](release.md#app-check)).
 - **Real limits belong on the server.** The app's own limits stop accidental repeats. Firebase's limits and App Check do the rest.

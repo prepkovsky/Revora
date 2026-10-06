@@ -5,7 +5,7 @@ What's left before Revora can go on TestFlight and the App Store. The app itself
 ## Checklist
 
 - [ ] Paid Apple Developer account, and the app's bundle ID registered under it
-- [ ] [App Check](#app-check) with App Attest, enforced on Firestore and Authentication, **before any build goes to other people**
+- [ ] [App Check](#app-check) with App Attest, enforced on Firestore, Authentication and the `scanRecipe` function, **before any build goes to other people**
 - [ ] [Legal pages](#legal-pages) on a website, with the developer's name and a contact address
 - [ ] [Support URL and a Contact row](#support-and-contact)
 - [ ] [App Privacy label](#privacy) in App Store Connect, matching the privacy manifest
@@ -26,7 +26,9 @@ Without App Check, Firebase accepts requests from any client that has the app's 
 3. In the Firebase console, register the app for App Attest, then watch the App Check metrics for a while to see that real traffic passes.
 4. Enforce it on **Cloud Firestore**, then on **Authentication** (still in preview, and it covers sign-up, sign-in and reset emails). Check whether Authentication enforcement needs the Identity Platform upgrade.
 
-App Attest costs nothing, but needs the paid account. If that's ever not enough, the next step is the Blaze plan with a `beforeEmailSent` blocking function, which can limit emails per address or IP and raises the daily reset emails from 150 to 10,000.
+5. Enforce it on the **`scanRecipe` function**: add `enforceAppCheck: true` to its options and deploy. It matters most there, since every scan is a paid OpenAI request. For replay protection too, also set `consumeAppCheckToken: true` and call it with `HTTPSCallableOptions(requireLimitedUseAppCheckTokens: true)` in `RecipeScanner`.
+
+App Attest costs nothing, but needs the paid account. If that's ever not enough, a `beforeEmailSent` blocking function (possible now the project is on Blaze) can limit emails per address or IP.
 
 The Firebase configuration isn't in this repository, so the code alone gives no access to the project. Until a build goes to other people, it only exists in the gitignored `GoogleService-Info.plist` and in builds on your own devices. See [Known gaps](data-and-security.md#known-gaps).
 
@@ -52,7 +54,7 @@ Acknowledgments stays in the app.
 `Revora/PrivacyInfo.xcprivacy` declares:
 
 - **No tracking**, and no tracking domains.
-- **Data collected**, all linked to the user and only for app functionality: email address, name, photos, and other user content (the recipes).
+- **Data collected**, all linked to the user and only for app functionality: email address, name, photos, and other user content (the recipes). Photos cover cover photos and scanned photos alike. Scanned photos go to OpenAI as a processor, which still counts as collected for the label, and aren't used for tracking.
 - **Required-reason API:** `UserDefaults`, reason `CA92.1` (appearance, sent confirmations, email limits).
 
 Xcode combines it with the Firebase packages' own manifests into the app's privacy report. Fill in the **App Privacy** label in App Store Connect from that report. Firebase's manifests add:
@@ -70,4 +72,6 @@ The Privacy Policy currently says "No analytics or tracking". **Reconcile that w
 - **API key** restricted to the bundle ID (Google Cloud Console → APIs & Services → Credentials).
 - **Email templates** (Authentication → Templates): verification, password reset and email change still use Firebase's default wording and sender name. Customize them if wanted.
 - **Security rules** published and matching `firestore.rules`.
-- **Free plan limits** (see [Data and security](data-and-security.md#free-plan-limits)). Watch usage once real people sign up, and move to Blaze if the daily email or Firestore allowances get close.
+- **Plan and limits** (see [Data and security](data-and-security.md#plan-and-limits)): the Google Cloud budget alert and the OpenAI spending limit are set. Watch Firestore, Functions and OpenAI usage once real people sign up.
+- **Time-to-live policy** on `scanUsage`, field `expiresAt` (see [Cloud Functions](functions.md#setup)).
+- **`scanRecipe` deployed** from the current `functions/`.

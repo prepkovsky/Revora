@@ -45,6 +45,7 @@ Those were checked by hand on the simulator and against the real Firebase projec
 
 - sign up, confirm the email, log in, log out;
 - create, edit, favorite and delete a recipe, with and without a photo;
-- turn Wi-Fi off: the Offline badge shows, edits still save, and they sync when it's back;
+- scan a cookbook page, a handwritten card and a photo without a recipe (each counts toward the day's 3 scans, so spread them over days or raise `dailyScanLimit` while testing);
+- turn Wi-Fi off: the Offline badge shows, edits still save, and they sync when it's back, and a scan says it needs a connection;
 - for rules changes, the Rules Playground (see [Data and security](data-and-security.md#publishing-the-rules));
 - light and dark mode, the largest accessibility text size, and an iPad.
