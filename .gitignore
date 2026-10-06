@@ -35,6 +35,16 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
+# Cloud Functions
+functions/node_modules/
+functions/lib/
+.firebase/
+firebase-debug*.log
+firestore-debug*.log
+*.secret.local
+# Names the Firebase project, like GoogleService-Info.plist
+.firebaserc
+
 # Local reference docs (not part of the app)
 .references/
 

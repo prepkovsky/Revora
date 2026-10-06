@@ -8,7 +8,7 @@ The main choices behind Revora and why they were made. Check here before changin
 - **Swift 6 with default MainActor isolation.** Turned on while the project was empty, when it cost nothing. App code runs on the main actor unless it says otherwise, which removes most concurrency noise in a SwiftUI app.
 - **Only FirebaseAuth and FirebaseFirestore**, and no other dependencies. Each extra Firebase product is a deliberate choice, so ask before adding one.
 - **`GoogleService-Info.plist` stays out of git.** It holds no real secret, since the rules protect the data, but keeping it out stops key scanners from flagging the repo. The cost is that a fresh clone needs the file added before it builds.
-- **The rules are published by hand** in the Firebase console. There's one small rules file and no other Firebase config, so the Firebase CLI isn't set up.
+- **The rules are published by hand** in the Firebase console. There's one small rules file, so `firebase.json` only configures the Cloud Functions, and deploying them never touches the rules.
 
 ## Data
 
@@ -25,6 +25,13 @@ The main choices behind Revora and why they were made. Check here before changin
 - **Meal types are a fixed set**, not free-form tags. Six meals cover what Home and Surprise Me need, with no tag management.
 - **The name lives in Firebase Auth** (`displayName`), not Firestore, so it needs no rules and no extra document.
 - **Appearance is saved on the device**, not in the account. It's about the screen in front of you.
+
+## Recipe scanning
+
+- **OpenAI runs behind a Cloud Function.** Its key would be readable out of the app, so it only exists as a Firebase secret, and the function checks the login, the confirmed email and a daily limit first. This needs the Blaze plan.
+- **A scan fills the editor; it doesn't save.** The model can misread a quantity, so people check the recipe before tapping Save.
+- **The scanned photo isn't the cover photo.** A cookbook page or recipe card rarely makes a good one, and it isn't stored anywhere.
+- **Moderation only turns away clearly harmful photos.** It protects the OpenAI account, and cookbook pages with raw meat or a whole fish must still scan (see [Cloud Functions](functions.md#moderation)).
 
 ## Accounts
 

@@ -16,6 +16,8 @@ Revora/
 ├── Info.plist      Fonts, launch screen, camera usage text
 └── PrivacyInfo.xcprivacy
 RevoraTests/        Unit tests (Swift Testing)
+functions/          Cloud Functions in TypeScript: scanRecipe
+firebase.json       Firebase CLI config, for deploying the functions only
 firestore.rules     Firestore security rules, published by hand
 ```
 

@@ -9,7 +9,8 @@ This file is the short rule sheet. The details are in [`docs/`](docs/documentati
 - SwiftUI, iOS/iPadOS 18+ (deployment target), built with Xcode 27. Guard newer APIs with `#available`.
 - **Swift 6** language mode with **default MainActor isolation** and approachable concurrency (set in build settings)
 - Firebase via Swift Package Manager: **FirebaseAuth** and **FirebaseFirestore** only. Don't add other Firebase products without asking.
-- No other third-party dependencies.
+- No other third-party dependencies in the app.
+- Cloud Functions in `functions/`: TypeScript on Node 22, with only `firebase-admin` and `firebase-functions`. OpenAI is called with plain `fetch`. See [Cloud Functions](docs/functions.md).
 
 ## Build
 
@@ -27,6 +28,12 @@ xcodebuild -project Revora.xcodeproj -scheme Revora \
 
 If Xcode is open and resolving packages at the same time, add `-clonedSourcePackagesDirPath <tmp dir>` to avoid cache conflicts.
 
+Build and test the Cloud Functions (run `npm install --prefix functions` once first):
+
+```sh
+npm --prefix functions test
+```
+
 The app needs `Revora/GoogleService-Info.plist` to build and run. It is gitignored on purpose. Never commit it, and never remove it from `.gitignore`.
 
 ## Project layout
@@ -41,6 +48,7 @@ Revora/
 ├── Resources/      Fonts, the in-app legal texts and open-source licences
 └── Assets.xcassets
 RevoraTests/        Unit tests (Swift Testing)
+functions/          Cloud Functions (TypeScript): scanRecipe, with tests next to the code
 docs/               Developer documentation
 ```
 
@@ -59,6 +67,7 @@ See [Architecture](docs/architecture.md) and [Data and security](docs/data-and-s
 - All photo access goes through `RecipePhotoStore`. Photos live in Firestore and never change: a new photo gets a new `photoID`.
 - The Firestore shape is in [Data and security](docs/data-and-security.md#firestore-layout). Keep older recipes decoding when you change it, and cover both shapes in `RecipeCodingTests`.
 - The security rules are in `firestore.rules`. They're deployed by hand in the Firebase console, so after every change, say that they need publishing there.
+- The OpenAI key lives only in the Firebase secret `OPENAI_API_KEY`. Never put it in the app, a file or the repo. After every change in `functions/`, say that it needs deploying (`firebase deploy --only functions`).
 
 ## Conventions
 

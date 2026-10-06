@@ -23,17 +23,20 @@ How each part of the app behaves, including what the code doesn't make obvious.
 - [Design](design.md): colors, fonts, shared components, and loading, empty and error states.
 - [Testing](testing.md): what's tested, how to run it, and what isn't covered.
 - [Decisions](decisions.md): the main choices and why they were made.
+- [Cloud Functions](functions.md): `scanRecipe`, its checks and limits, and how to set it up, deploy and test it.
 - [Release](release.md): what's left before TestFlight and the App Store.
 
 ## Also in the repo
 
 - [`AGENTS.md`](../AGENTS.md): the short rule sheet for coding agents (Claude Code reads it through `CLAUDE.md`).
 - [`firestore.rules`](../firestore.rules): the Firestore security rules.
+- [`functions/`](../functions): the Cloud Functions, deployed with `firebase deploy --only functions`.
 
 ## Keeping these up to date
 
 Update the docs in the same change as the behavior they describe. A few things are easy to forget:
 
 - After changing `firestore.rules`, publish them in the Firebase console ([how](data-and-security.md#publishing-the-rules)).
+- After changing `functions/`, deploy them ([how](functions.md#deploy)).
 - When behavior changes, update Help's answers (`HelpTopic.all`), and the Privacy Policy if it touches data.
 - When packages change, update Acknowledgments (`OpenSourceComponent.all` and `Resources/Licenses/`).

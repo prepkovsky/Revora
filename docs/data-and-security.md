@@ -18,6 +18,14 @@ users/{uid}/recipes/{recipeId}/thumbnails/{photoID}   data: Bytes (JPEG, ≤ 100
 
 There's no `users/{uid}` document itself. The name lives in Firebase Auth's `displayName`, not in Firestore.
 
+One more collection belongs to the `scanRecipe` Cloud Function, not the app:
+
+```
+scanUsage/{uid}   day, count, expiresAt   (today's recipe scans)
+```
+
+The rules don't match it, so the app can't read or change it. See [Cloud Functions](functions.md#daily-limit).
+
 ### Recipes
 
 - **IDs** are made on the device (`newRecipeID()`), so a photo can be saved under a recipe before the recipe itself.
@@ -64,7 +72,7 @@ The rules are **deployed by hand**. After every change to `firestore.rules`:
 2. Paste in the whole file and **Publish**.
 3. Check the change in the **Rules Playground**: your own recipe allowed, another user's path denied, and for photos, an update or a non-bytes `data` denied.
 
-There's no Firebase CLI setup in the repo, so nothing deploys the rules automatically.
+`firebase.json` only configures the [Cloud Functions](functions.md), so `firebase deploy` never touches the rules.
 
 ## On the device
 
